@@ -1,5 +1,4 @@
 {
-  "name": "bitaqa-temp",
   "name": "bitaqa",
   "version": "0.1.0",
   "private": true,
@@ -7,7 +6,6 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
     "lint": "eslint . && prettier --check .",
     "lint:fix": "eslint --fix . && prettier --write .",
     "typecheck": "tsc --noEmit",
@@ -16,18 +14,6 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.6.1",
-    "@supabase/supabase-js": "^2.49.8",
-    "framer-motion": "^12.12.1",
-    "lucide-react": "^0.511.0",
-    "next": "16.3.5",
-    "next-intl": "^4.1.4",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
-    "react-dom": "19.2.8",
-    "react-hook-form": "^7.56.4",
-    "zod": "^3.25.56",
-    "@hookform/resolvers": "^5.0.1"
     "@hookform/resolvers": "^3.9.0",
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.45.4",
@@ -41,26 +27,16 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@playwright/test": "^1.52.0",
     "@eslint/eslintrc": "^3.3.7",
     "@playwright/test": "^1.47.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.1",
     "@types/node": "^20",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitejs/plugin-react": "^4.5.2",
     "@vitejs/plugin-react": "^4.3.1",
     "eslint": "^9",
-    "eslint-config-next": "16.3.5",
-    "eslint-config-prettier": "^10.1.5",
-    "jsdom": "^26.1.0",
-    "prettier": "^3.5.3",
-    "prettier-plugin-tailwindcss": "^0.6.12",
     "eslint-config-next": "15.0.0",
     "eslint-config-prettier": "^9.1.0",
     "jsdom": "^25.0.0",
@@ -68,9 +44,7 @@
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
     "typescript": "^5",
-    "vitest": "^3.2.1"
     "vitest": "^2.1.1"
   }
 }

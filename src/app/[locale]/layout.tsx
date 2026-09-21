@@ -1,16 +1,12 @@
 import type { Metadata } from 'next';
-import { Geist } from 'next/font/google';
 import { Inter } from 'next/font/google';
 import { notFound } from 'next/navigation';
-import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { locales, isRtl } from '@/i18n/config';
 import type { Locale } from '@/i18n/config';
 import '../globals.css';
 
-const geist = Geist({
-  variable: '--font-geist',
 const inter = Inter({
   variable: '--font-inter',
   subsets: ['latin'],
@@ -45,7 +41,6 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
-  if (!hasLocale(locales, locale)) {
   if (!locales.includes(locale as Locale)) {
     notFound();
   }
@@ -55,7 +50,6 @@ export default async function LocaleLayout({
   const dir = isRtl(locale as Locale) ? 'rtl' : 'ltr';
 
   return (
-    <html lang={locale} dir={dir} className={`${geist.variable} h-full`}>
     <html lang={locale} dir={dir} className={`${inter.variable} h-full`}>
       <body className="min-h-full bg-bg text-text antialiased">
         <NextIntlClientProvider messages={messages}>
