@@ -15,4 +15,3 @@ test.describe('Home page', () => {
     await expect(page.locator('h1')).toBeVisible();
   });
 });
-

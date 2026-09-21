@@ -1,53 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-# Bitaqa - Plateforme Cartes NFC
+# Bitaqa
 
-## Getting Started
-Projet Next.js (App Router) pour la vente de cartes NFC noir mat.
+Plateforme Next.js (App Router) pour vendre des cartes NFC noir mat.
 
-First, run the development server:
 ## Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 npm install
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-## Variables d'environnement
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-Copiez `.env.example` vers `.env.local` et remplissez les valeurs :
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-```bash
 cp .env.example .env.local
 ```
 
-## Learn More
+Renseignez les clés Supabase dans `.env.local`, puis appliquez la migration `supabase/migrations/20240921120000_init.sql` (SQL Editor ou CLI).
+
+```bash
+npm run dev
+```
+
+## Variables d’environnement
+
+Voir `.env.example` : URL et clé anon publiques, `SUPABASE_SERVICE_ROLE_KEY` côté serveur uniquement, `NEXT_PUBLIC_SITE_URL`.
+
+## Comptes vendeurs
+
+Pas d’inscription publique. Création d’un vendeur (admin ou seller) :
+
+```bash
+npm run seller:create -- --email ada@bitaqa.ma --password "********" --name "Ada" --role seller
+```
+
+Seed de 3 profils de démonstration (après au moins un vendeur) :
+
+```bash
+npm run db:seed
+# optionnel : --seller-email ada@bitaqa.ma
+```
+
 ## Commandes
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-- `npm run dev` : Lancer le serveur de développement
-- `npm run build` : Compiler pour la production
-- `npm run lint` : Vérifier le code avec ESLint et Prettier
-- `npm run lint:fix` : Corriger automatiquement les erreurs de formatage
-- `npm run typecheck` : Vérifier les types TypeScript
-- `npm run test` : Lancer les tests unitaires avec Vitest
-- `npm run test:e2e` : Lancer les tests end-to-end avec Playwright
+- `npm run dev` — développement
+- `npm run build` — compilation
+- `npm run lint` — ESLint + Prettier
+- `npm run typecheck` — TypeScript
+- `npm run test` — Vitest
+- `npm run test:e2e` — Playwright
+- `npm run seller:create` — créer un vendeur
+- `npm run db:seed` — profils de démonstration

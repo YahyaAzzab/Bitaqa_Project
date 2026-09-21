@@ -18,4 +18,3 @@ describe('Smoke test', () => {
     expect(isRtl('fr')).toBe(false);
   });
 });
-
