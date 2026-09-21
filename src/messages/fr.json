@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "title": "Bitaqa — Votre carte de visite NFC",
+    "description": "Transformez votre carte de visite en une expérience digitale mémorable avec une carte NFC noir mat."
+  },
+  "home": {
+    "hero": "Votre identité professionnelle, au bout des doigts",
+    "subtitle": "Une carte NFC noir mat qui remplace toutes vos cartes de visite."
+  },
+  "common": {
+    "loading": "Chargement…",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "back": "Retour",
+    "next": "Suivant",
+    "close": "Fermer",
+    "language": "العربية"
+  }
+}
