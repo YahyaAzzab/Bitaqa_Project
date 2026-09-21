@@ -1,11 +1,18 @@
+import { useTranslations } from 'next-intl';
+import { setRequestLocale } from 'next-intl/server';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 
+export default function HomePage({
 export default async function HomePage({
   params,
 }: {
+  params: { locale: string };
   params: Promise<{ locale: string }>;
 }) {
+  setRequestLocale(params.locale);
+  const t = useTranslations('home');
+  const tc = useTranslations('common');
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'home' });
@@ -23,6 +30,7 @@ export default async function HomePage({
         <div className="mt-8">
           <Link
             href="/"
+            locale={params.locale === 'fr' ? 'ar' : 'fr'}
             locale={locale === 'fr' ? 'ar' : 'fr'}
             className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:border-accent hover:text-accent"
           >

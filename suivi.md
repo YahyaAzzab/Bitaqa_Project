@@ -21,3 +21,4 @@ Ce fichier retrace les étapes réalisées et les décisions techniques prises a
 - L'arborescence des fichiers met l'accent sur le répertoire `src/` pour une structure plus propre du code source, en séparant la logique applicative de la configuration racine.
 
 **Prochaine étape** : Validation de l'étape 1 (build, lint, et exécution des tests unitaires et e2e) pour s'assurer que les fondations sont solides, puis passage à l'étape 2 (Design system).
+
