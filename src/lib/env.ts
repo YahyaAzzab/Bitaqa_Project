@@ -13,10 +13,11 @@ const serverEnvSchema = envSchema.extend({
 export type PublicEnv = z.infer<typeof envSchema>;
 
 function publicEnvInput() {
+  const strip = (v: string | undefined) => v?.replace(/\/+$/, '') || v;
   return {
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_URL: strip(process.env.NEXT_PUBLIC_SUPABASE_URL),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+    NEXT_PUBLIC_SITE_URL: strip(process.env.NEXT_PUBLIC_SITE_URL),
   };
 }
 

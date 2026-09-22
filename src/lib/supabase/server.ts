@@ -1,9 +1,14 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { env } from '@/lib/env';
 import type { Database } from '@/lib/supabase/database.types';
 
-export async function createServerSupabaseClient() {
+/**
+ * Cast nécessaire : @supabase/ssr 0.5.x passe Schema en 3ᵉ générique,
+ * alors que supabase-js ≥ 2.70 attend SchemaName — sinon les queries typent `never`.
+ */
+export async function createServerSupabaseClient(): Promise<SupabaseClient<Database>> {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
@@ -25,5 +30,5 @@ export async function createServerSupabaseClient() {
         },
       },
     },
-  );
+  ) as unknown as SupabaseClient<Database>;
 }

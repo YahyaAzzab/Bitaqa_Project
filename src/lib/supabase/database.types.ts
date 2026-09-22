@@ -363,9 +363,48 @@ export type Database = {
       };
     };
     Functions: {
-      is_seller: { Args: Record<PropertyKey, never>; Returns: boolean };
-      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      is_seller: { Args: Record<string, never>; Returns: boolean };
+      is_admin: { Args: Record<string, never>; Returns: boolean };
       can_manage_profile: { Args: { pid: string }; Returns: boolean };
+      create_profile_atomic: {
+        Args: {
+          p_slug: string;
+          p_business_name_fr: string;
+          p_business_name_ar?: string | null;
+          p_tagline_fr?: string | null;
+          p_tagline_ar?: string | null;
+          p_address_fr?: string | null;
+          p_address_ar?: string | null;
+          p_default_lang?: string;
+          p_logo_url?: string | null;
+          p_accent_color?: string;
+          p_theme?: string;
+          p_phone?: string | null;
+          p_email?: string | null;
+          p_hours?: Json | null;
+          p_plan_code?: string;
+          p_amount_mad?: number;
+          p_design_notes?: string | null;
+          p_order_logo_url?: string | null;
+          p_links?: Json;
+        };
+        Returns: string;
+      };
+      renew_profile: {
+        Args: {
+          p_profile_id: string;
+          p_amount_mad: number;
+        };
+        Returns: null;
+      };
+      profile_scan_stats: {
+        Args: { p_profile_id: string };
+        Returns: Json;
+      };
+      admin_scan_overview: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
     };
     Enums: {
       app_role: AppRole;
@@ -382,4 +421,9 @@ export type Tables<T extends keyof Database['public']['Tables']> =
   Database['public']['Tables'][T]['Row'];
 export type Seller = Tables<'sellers'>;
 export type Profile = Tables<'profiles'>;
+export type ProfileLink = Tables<'profile_links'>;
 export type Sale = Tables<'sales'>;
+export type CustomOrder = Tables<'custom_orders'>;
+export type CashHandover = Tables<'cash_handovers'>;
+export type Scan = Tables<'scans'>;
+export type Plan = Tables<'plans'>;

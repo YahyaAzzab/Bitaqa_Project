@@ -5,17 +5,28 @@ import type { User } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 function readSupabasePublicConfig(): { url: string; anonKey: string } | null {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/+$/, '');
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anonKey) return null;
   if (url.includes('your-project') || anonKey === 'your-anon-key') return null;
   return { url, anonKey };
 }
 
-export async function updateSession(request: NextRequest, response: NextResponse) {
+export function hasSupabaseAuthCookie(request: NextRequest): boolean {
+  return request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith('sb-') && c.name.includes('auth-token'));
+}
+
+/** Uniquement pour les chemins qui doivent vraiment valider l’Auth (login / 1ʳᵉ entrée dashboard). */
+export async function updateSession(
+  request: NextRequest,
+  response: NextResponse,
+  options: { remote: true },
+) {
   const config = readSupabasePublicConfig();
   if (!config) {
-    return { supabase: null, user: null, response };
+    return { supabase: null, user: null as User | null, response };
   }
 
   const supabase = createServerClient<Database>(config.url, config.anonKey, {
@@ -32,6 +43,8 @@ export async function updateSession(request: NextRequest, response: NextResponse
     },
   });
 
+  // getUser = contact Auth serveur — volontaire ici seulement (pas le chemin chaud).
+  void options;
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -9,11 +9,24 @@ npm install
 cp .env.example .env.local
 ```
 
-Renseignez les clés Supabase dans `.env.local`, puis appliquez la migration `supabase/migrations/20240921120000_init.sql` (SQL Editor ou CLI).
+Renseignez les clés Supabase dans `.env.local`, puis appliquez **dans l’ordre** :
+
+1. `supabase/migrations/20240921120000_init.sql`
+2. `supabase/migrations/20240922120000_rpcs.sql`
+
+(SQL Editor Supabase ou CLI).
 
 ```bash
 npm run dev
 ```
+
+## Parcours vendeur
+
+- `/fr/login` — connexion
+- `/fr/dashboard` — accueil
+- `/fr/dashboard/new` — créer un profil
+- `/fr/dashboard/ready/{slug}` — lien NFC + reçu PDF
+- `/fr/{slug}` — profil public (ce que le client scanne)
 
 ## Variables d’environnement
 
