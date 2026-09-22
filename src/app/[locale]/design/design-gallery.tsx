@@ -1,6 +1,6 @@
 'use client';
 
-import { Inbox, Settings } from 'lucide-react';
+import { ArrowUpRight, Inbox, Settings, Sparkles } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useId, useState } from 'react';
 import { useTheme } from '@/components/providers';
@@ -35,7 +35,7 @@ const ACCENTS: Record<AccentName, string> = {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-4">
+    <section className="design-section flex flex-col gap-4">
       <h2 className="text-text-muted text-[13px] font-medium tracking-[0.08em] uppercase">
         {title}
       </h2>
@@ -68,10 +68,15 @@ export function DesignGallery() {
   }, [accentName, setAccent]);
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-10 px-4 py-8 pb-16">
+    <main className="design-shell mx-auto flex min-h-dvh w-full max-w-md flex-col gap-8 px-4 py-6 pb-16">
       <header className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-[32px] leading-none font-semibold tracking-tight">{t('title')}</h1>
+          <div>
+            <p className="home-kicker">Bitaqa / 02</p>
+            <h1 className="mt-2 text-[32px] leading-none font-semibold tracking-tight">
+              {t('title')}
+            </h1>
+          </div>
           <Link
             href="/design"
             locale={locale === 'fr' ? 'ar' : 'fr'}
@@ -82,6 +87,31 @@ export function DesignGallery() {
         </div>
         <p className="text-text-secondary text-[15px] leading-relaxed">{t('lede')}</p>
       </header>
+
+      <section className="design-hero overflow-hidden rounded-xl border border-white/10 p-5">
+        <div className="relative z-10 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-accent text-[11px] font-semibold tracking-[0.18em] uppercase">
+              {t('heroKicker')}
+            </p>
+            <p className="text-ivory mt-3 max-w-[15rem] text-2xl leading-tight font-semibold tracking-tight">
+              {t('heroTitle')}
+            </p>
+          </div>
+          <Sparkles className="text-accent mt-1 shrink-0" size={22} strokeWidth={1.5} />
+        </div>
+        <div className="design-preview-card relative z-10 mt-7">
+          <div className="flex items-start justify-between">
+            <span className="text-[10px] tracking-[0.2em] text-white/50 uppercase">BITAQA</span>
+            <ArrowUpRight className="text-accent" size={18} strokeWidth={1.6} />
+          </div>
+          <div className="mt-8">
+            <div className="bg-accent mb-3 h-px w-10" />
+            <p className="text-ivory text-lg font-semibold">{t('heroCardName')}</p>
+            <p className="mt-1 text-xs text-white/50">{t('heroCardRole')}</p>
+          </div>
+        </div>
+      </section>
 
       <Section title={t('theme')}>
         <SegmentedControl
