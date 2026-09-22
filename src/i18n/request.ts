@@ -4,7 +4,8 @@ import type { Locale } from './config';
 
 export default getRequestConfig(async ({ requestLocale }) => {
   const requested = await requestLocale;
-  const locale = locales.includes(requested as Locale) ? requested : defaultLocale;
+  const locale: Locale =
+    requested && locales.includes(requested as Locale) ? (requested as Locale) : defaultLocale;
 
   return {
     locale,
