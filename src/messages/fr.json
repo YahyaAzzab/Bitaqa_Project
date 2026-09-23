@@ -4,11 +4,14 @@
     "description": "Transformez votre carte de visite en une expérience digitale mémorable avec une carte NFC noir mat."
   },
   "home": {
-    "eyebrow": "La carte qui reste en tête",
-    "hero": "Votre identité professionnelle, au bout des doigts",
-    "subtitle": "Une carte NFC noir mat qui remplace vos cartes de visite et ouvre votre univers en un geste.",
-    "cta": "Entrer dans l’espace vendeur",
-    "microcopy": "Prête en quelques minutes",
+    "eyebrow": "Carte NFC · noir mat",
+    "hero": "Votre identité, au bout des doigts",
+    "subtitle": "Une carte physique qui ouvre votre profil bilingue en un geste. Simple à remettre, impossible à oublier.",
+    "cta": "Espace vendeur",
+    "callUs": "Nous appeler",
+    "microcopy": "Profil prêt en quelques minutes",
+    "contactTitle": "Commander ou parler à l’équipe",
+    "contactLede": "Deux numéros, une équipe au Maroc. Appelez pour votre carte ou une démo.",
     "statOne": "1 geste",
     "statOneLabel": "pour partager vos coordonnées",
     "statTwo": "FR · AR",
@@ -20,7 +23,7 @@
     "cardRole": "Une présence qui vous ressemble",
     "cardTap": "Touchez pour découvrir",
     "cardNoteOne": "Profil modifiable",
-    "cardNoteTwo": "Sans application à installer",
+    "cardNoteTwo": "Sans application",
     "footer": "Une présence professionnelle, sans papier superflu.",
     "footerDetail": "NFC · Maroc"
   },
