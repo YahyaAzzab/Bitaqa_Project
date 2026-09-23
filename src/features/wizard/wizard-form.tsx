@@ -25,7 +25,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { ProfileView } from '@/features/profile/profile-view';
 import { clearWizardDraft, loadWizardDraft, saveWizardDraft } from '@/features/wizard/draft';
-import { checkSlugAvailable, createProfile, uploadLogo } from '@/features/wizard/actions';
+import { checkSlugAvailable, createProfile } from '@/features/wizard/actions';
+import { LogoPicker } from '@/features/wizard/logo-picker';
 import { useRouter } from '@/i18n/navigation';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { formatMad } from '@/lib/money';
@@ -53,36 +54,6 @@ const LINK_ICONS: Record<WizardLinkType, typeof Instagram> = {
   website: Globe,
   custom: Link2,
 };
-
-async function compressLogoToWebp(file: File, maxBytes = 200_000): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
-  const side = Math.min(bitmap.width, bitmap.height);
-  const sx = (bitmap.width - side) / 2;
-  const sy = (bitmap.height - side) / 2;
-
-  let target = Math.min(side, 960);
-  let quality = 0.86;
-  let blob: Blob | null = null;
-
-  for (let attempt = 0; attempt < 8; attempt += 1) {
-    const canvas = document.createElement('canvas');
-    canvas.width = target;
-    canvas.height = target;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('canvas');
-    ctx.drawImage(bitmap, sx, sy, side, side, 0, 0, target, target);
-    blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob((b) => resolve(b), 'image/webp', quality),
-    );
-    if (blob && blob.size <= maxBytes) break;
-    if (quality > 0.5) quality -= 0.12;
-    else target = Math.round(target * 0.82);
-  }
-
-  bitmap.close();
-  if (!blob) throw new Error('compress');
-  return blob;
-}
 
 function toPreview(values: WizardFormValues): ProfilePreviewData {
   return {
@@ -117,7 +88,6 @@ export function WizardForm() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [pendingLinkType, setPendingLinkType] = useState<WizardLinkType>('instagram');
   const [linkInput, setLinkInput] = useState('');
-  const [uploading, setUploading] = useState(false);
   const [submitting, startSubmit] = useTransition();
   const slugTouched = useRef(false);
   const draftLoaded = useRef(false);
@@ -222,42 +192,6 @@ export function WizardForm() {
     append({ type: pendingLinkType, value: url });
     setLinkInput('');
   }, [append, linkInput, pendingLinkType, tProfile, toast]);
-
-  const onLogoPick = useCallback(
-    async (file: File | undefined) => {
-      if (!file) return;
-      setUploading(true);
-      try {
-        const webp = await compressLogoToWebp(file);
-        const fd = new FormData();
-        fd.append('file', new File([webp], 'logo.webp', { type: 'image/webp' }));
-        const res = await uploadLogo(fd);
-        if (!res.ok) {
-          toast({ title: t('logoHint'), variant: 'error' });
-          return;
-        }
-        setValue('logoUrl', res.data.url, { shouldDirty: true });
-
-        const canvas = document.createElement('canvas');
-        const bmp = await createImageBitmap(webp);
-        canvas.width = 1;
-        canvas.height = 1;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(bmp, 0, 0, 1, 1);
-          const [r = 0, g = 0, b = 0] = ctx.getImageData(0, 0, 1, 1).data;
-          const hex = `#${[r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('')}`;
-          setValue('accentColor', hex);
-        }
-        bmp.close();
-      } catch {
-        toast({ title: t('logoHint'), variant: 'error' });
-      } finally {
-        setUploading(false);
-      }
-    },
-    [setValue, t, toast],
-  );
 
   const onSubmit = form.handleSubmit((values) => {
     if (!navigator.onLine) {
@@ -510,23 +444,14 @@ export function WizardForm() {
 
           {STEPS[step] === 'identity' ? (
             <>
-              <div>
-                <p className="text-text-secondary mb-1.5 text-[13px] font-medium">{t('logo')}</p>
-                <p className="text-text-muted mb-2 text-[12px]">{t('logoHint')}</p>
-                <label className="border-border bg-surface pressable focus-ring flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed px-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="sr-only"
-                    disabled={uploading}
-                    onChange={(e) => void onLogoPick(e.target.files?.[0])}
-                  />
-                  <span className="text-[14px] font-medium">
-                    {uploading ? '…' : watched.logoUrl ? '✓' : t('logo')}
-                  </span>
-                </label>
-              </div>
+              <LogoPicker
+                logoUrl={watched.logoUrl}
+                businessName={watched.businessNameFr || 'B'}
+                onUploaded={(url, accent) => {
+                  setValue('logoUrl', url, { shouldDirty: true });
+                  if (accent) setValue('accentColor', accent, { shouldDirty: true });
+                }}
+              />
               <div>
                 <p className="text-text-secondary mb-2 text-[13px] font-medium">{t('theme')}</p>
                 <Controller

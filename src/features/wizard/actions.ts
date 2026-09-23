@@ -164,20 +164,23 @@ export async function uploadLogo(
   if (!(file instanceof File) || file.size === 0) {
     return { ok: false, error: 'file_missing' };
   }
-  if (file.size > 220_000) {
+  if (file.size > 500_000) {
     return { ok: false, error: 'file_too_large' };
   }
-  if (!['image/webp', 'image/jpeg', 'image/png'].includes(file.type)) {
+  // Après compression client : webp/jpeg/png ; vide sur certains WebView mobiles.
+  const type = file.type || 'image/jpeg';
+  if (!['image/webp', 'image/jpeg', 'image/png', 'image/jpg'].includes(type) && type !== '') {
     return { ok: false, error: 'file_type' };
   }
 
-  const ext = file.type === 'image/png' ? 'png' : file.type === 'image/jpeg' ? 'jpg' : 'webp';
+  const ext =
+    type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : 'jpg';
   const path = `${session.userId}/${crypto.randomUUID()}.${ext}`;
 
   const supabase = await createServerSupabaseClient();
   const buffer = Buffer.from(await file.arrayBuffer());
   const { error } = await supabase.storage.from('logos').upload(path, buffer, {
-    contentType: file.type,
+    contentType: type === 'image/jpg' ? 'image/jpeg' : type || 'image/jpeg',
     upsert: false,
   });
 
