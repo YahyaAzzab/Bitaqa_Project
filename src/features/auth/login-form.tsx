@@ -1,9 +1,10 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Eye, EyeOff } from 'lucide-react';
 import { signIn } from '@/features/auth/actions';
+import { useKeyboardOffset } from '@/hooks/use-keyboard-offset';
 import type { LoginState } from '@/lib/auth/schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,24 +20,7 @@ export function LoginForm({ locale, nextPath, initialError }: LoginFormProps) {
   const t = useTranslations('login');
   const [state, formAction, pending] = useActionState(signIn, initialError);
   const [showPassword, setShowPassword] = useState(false);
-  const [vvOffset, setVvOffset] = useState(0);
-
-  useEffect(() => {
-    const viewport = window.visualViewport;
-    if (!viewport) return;
-
-    const sync = () => {
-      setVvOffset(Math.max(0, window.innerHeight - viewport.height));
-    };
-
-    sync();
-    viewport.addEventListener('resize', sync);
-    viewport.addEventListener('scroll', sync);
-    return () => {
-      viewport.removeEventListener('resize', sync);
-      viewport.removeEventListener('scroll', sync);
-    };
-  }, []);
+  const vvOffset = useKeyboardOffset();
 
   const errorMessage =
     state?.error === 'invalid'

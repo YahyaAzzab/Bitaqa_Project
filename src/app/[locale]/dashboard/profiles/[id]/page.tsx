@@ -3,10 +3,12 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ProfileActions } from '@/features/profiles/profile-actions';
+import { ProfileLogoEditor } from '@/features/profiles/profile-logo-editor';
 import type { Locale } from '@/i18n/config';
 import { getSellerSession } from '@/lib/auth/session';
-import { env, isSupabaseConfigured } from '@/lib/env';
+import { isSupabaseConfigured } from '@/lib/env';
 import { formatMad } from '@/lib/money';
+import { publicProfileUrl } from '@/lib/site-url';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { Json } from '@/lib/supabase/database.types';
 
@@ -78,8 +80,7 @@ export default async function ProfileDetailPage({
     locale === 'ar'
       ? profile.business_name_ar || profile.business_name_fr
       : profile.business_name_fr;
-  const site = env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
-  const publicUrl = `${site}/${locale}/${profile.slug}`;
+  const publicUrl = publicProfileUrl(locale, profile.slug);
   const expires = new Intl.DateTimeFormat(locale === 'ar' ? 'fr-MA' : 'fr-FR', {
     dateStyle: 'medium',
   }).format(new Date(profile.expires_at));
@@ -143,6 +144,12 @@ export default async function ProfileDetailPage({
             </ul>
           ) : null}
         </section>
+
+        <ProfileLogoEditor
+          profileId={profile.id}
+          businessName={name}
+          logoUrl={profile.logo_url}
+        />
 
         <ProfileActions
           profileId={profile.id}

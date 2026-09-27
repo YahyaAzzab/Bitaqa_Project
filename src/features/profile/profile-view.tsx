@@ -1,21 +1,18 @@
 'use client';
 
 import { LazyMotion, domAnimation, m } from 'framer-motion';
-import {
-  BookmarkPlus,
-  MessageCircle,
-  Phone,
-} from 'lucide-react';
+import { ArrowRight, BookmarkPlus, MapPin, MessageCircle, Nfc, Phone } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, type ComponentType } from 'react';
 import { Link } from '@/i18n/navigation';
 import { Avatar } from '@/components/ui/avatar';
 import { useTheme } from '@/components/providers';
-import { fadeUp, staggerContainer, variantsFor } from '@/lib/motion';
+import { fadeScale, fadeUp, staggerContainer, transitionBase, variantsFor } from '@/lib/motion';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import type { ProfilePreviewData } from '@/lib/profile/types';
 import { resolveProfileTheme } from '@/lib/profile/theme';
 import { toTelHref, toWhatsAppHref, isSafeProfileUrl } from '@/lib/profile/urls';
+import { cn } from '@/lib/utils';
 import { ProfileHours } from './profile-hours';
 import { ProfileLinkRow } from './profile-link-row';
 import { ProfileShareControls } from './profile-share';
@@ -27,6 +24,15 @@ type Props = {
   locale: 'fr' | 'ar';
   /** Mode aperçu dashboard — pas de scan, pas de pied de page CTA. */
   preview?: boolean;
+};
+
+type DockAction = {
+  key: string;
+  href: string;
+  label: string;
+  icon: ComponentType<{ className?: string; strokeWidth?: number; 'aria-hidden'?: boolean }>;
+  primary?: boolean;
+  external?: boolean;
 };
 
 function pick(
@@ -62,148 +68,222 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
     data.links.find((l) => l.type === 'whatsapp')?.value ||
     (data.phone ? toWhatsAppHref(data.phone) : null);
 
-  const displayLinks = data.links.filter(
-    (l) => !['phone', 'whatsapp'].includes(l.type) || l.type === 'custom',
-  );
+  const links = expired
+    ? []
+    : data.links.filter(
+        (l) =>
+          l.type !== 'phone' &&
+          l.type !== 'whatsapp' &&
+          (l.type === 'email' || isSafeProfileUrl(l.value)),
+      );
+
+  const actions: DockAction[] = [];
+  if (data.phone) {
+    actions.push({ key: 'call', href: toTelHref(data.phone), label: t('call'), icon: Phone, primary: true });
+  }
+  if (!expired && whatsappLink) {
+    actions.push({ key: 'wa', href: whatsappLink, label: t('whatsapp'), icon: MessageCircle, external: true });
+  }
+  if (!expired && data.slug) {
+    actions.push({ key: 'vcard', href: `/api/vcard/${data.slug}`, label: t('saveShort'), icon: BookmarkPlus });
+  }
 
   const otherLocale = locale === 'fr' ? 'ar' : 'fr';
+  const hasDock = actions.length > 0;
 
   return (
     <LazyMotion features={domAnimation}>
       {!preview && data.slug ? <ScanBeacon slug={data.slug} /> : null}
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        <header className="flex items-center justify-between gap-2">
-          <ProfileShareControls url={profileUrl} title={name} />
-          {!preview && data.slug ? (
-            <a
-              href={`/${otherLocale}/${data.slug}`}
-              className="pressable focus-ring text-text-secondary hover:text-text rounded-md px-3 py-2 text-[13px] font-medium"
-              hrefLang={otherLocale}
-            >
-              {otherLocale === 'ar' ? 'العربية' : 'Français'}
-            </a>
-          ) : null}
-        </header>
+      <div className={cn('relative isolate', !preview && 'min-h-dvh')}>
+        <div aria-hidden className="profile-halo pointer-events-none absolute inset-x-0 top-0 -z-10 h-80" />
 
-        <m.div
-          className="mt-8 flex flex-col items-center text-center"
-          variants={variantsFor(reduced, staggerContainer)}
-          initial="hidden"
-          animate="show"
+        <div
+          className={cn(
+            'mx-auto flex w-full max-w-md flex-col px-5 pt-[max(1rem,env(safe-area-inset-top))]',
+            preview ? 'pb-0' : 'min-h-dvh',
+            !preview &&
+              (hasDock
+                ? 'pb-[calc(6.5rem+env(safe-area-inset-bottom))]'
+                : 'pb-[max(1.5rem,env(safe-area-inset-bottom))]'),
+          )}
         >
-          <m.div variants={variantsFor(reduced, fadeUp)}>
-            <Avatar name={name || 'B'} src={data.logoUrl} size={88} className="rounded-xl" />
-          </m.div>
-          <m.h1
-            variants={variantsFor(reduced, fadeUp)}
-            className="mt-5 text-[28px] leading-tight font-semibold tracking-tight"
+          <header className="flex items-center justify-between gap-2">
+            <ProfileShareControls url={profileUrl} title={name} />
+            {!preview && data.slug ? (
+              <a
+                href={`/${otherLocale}/${data.slug}`}
+                hrefLang={otherLocale}
+                lang={otherLocale}
+                className="pressable focus-ring border-border bg-surface/70 text-text-secondary hover:text-text inline-flex min-h-12 items-center rounded-full border px-4 text-[13px] font-medium"
+              >
+                {otherLocale === 'ar' ? 'العربية' : 'Français'}
+              </a>
+            ) : null}
+          </header>
+
+          <m.div
+            className="mt-10 flex flex-col items-center text-center"
+            variants={variantsFor(reduced, staggerContainer)}
+            initial="hidden"
+            animate="show"
           >
-            {name}
-          </m.h1>
-          {tagline && !expired ? (
-            <m.p
-              variants={variantsFor(reduced, fadeUp)}
-              className="text-text-secondary mt-2 max-w-[20rem] text-[15px] leading-relaxed"
+            <m.div
+              variants={variantsFor(reduced, fadeScale)}
+              className="border-border bg-surface/60 rounded-[16px] border p-1"
             >
-              {tagline}
-            </m.p>
-          ) : null}
-          {address && !expired ? (
-            <m.p
+              <Avatar
+                name={name || 'B'}
+                src={data.logoUrl}
+                size={96}
+                priority={!preview}
+                className="rounded-lg border-0"
+              />
+            </m.div>
+            <m.h1
               variants={variantsFor(reduced, fadeUp)}
-              className="text-text-muted mt-2 text-[13px]"
+              className="mt-6 max-w-full text-[30px] leading-[1.1] font-semibold tracking-tight text-balance break-words"
             >
-              {address}
-            </m.p>
-          ) : null}
-          {expired ? (
-            <m.p
+              {name}
+            </m.h1>
+            {tagline && !expired ? (
+              <m.p
+                variants={variantsFor(reduced, fadeUp)}
+                className="text-text-secondary mt-3 max-w-[22rem] text-[15px] leading-relaxed text-pretty"
+              >
+                {tagline}
+              </m.p>
+            ) : null}
+            {address && !expired ? (
+              <m.p
+                variants={variantsFor(reduced, fadeUp)}
+                className="text-text-muted mt-3 inline-flex max-w-full items-center gap-1.5 text-[13px]"
+              >
+                <MapPin className="size-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
+                <span className="truncate">{address}</span>
+              </m.p>
+            ) : null}
+            {expired ? (
+              <m.p
+                variants={variantsFor(reduced, fadeUp)}
+                className="text-text-muted mt-4 max-w-[18rem] text-[14px] leading-relaxed"
+              >
+                {t('expiredMessage')}
+              </m.p>
+            ) : null}
+            <m.span
               variants={variantsFor(reduced, fadeUp)}
-              className="text-text-muted mt-4 max-w-[18rem] text-[14px] leading-relaxed"
-            >
-              {t('expiredMessage')}
-            </m.p>
-          ) : null}
-        </m.div>
+              className="bg-accent/60 mt-8 h-px w-12"
+              aria-hidden
+            />
+          </m.div>
 
-        {(data.phone || whatsappLink) && (
-          <div className="mt-8 grid gap-2">
-            {data.phone ? (
-              <a
-                href={toTelHref(data.phone)}
-                className="pressable focus-ring bg-accent text-accent-fg flex min-h-12 items-center justify-center gap-2 rounded-md text-[15px] font-medium"
+          {links.length > 0 ? (
+            <section className="mt-8" aria-labelledby="links-heading">
+              <h2
+                id="links-heading"
+                className="text-text-muted text-[12px] font-medium tracking-[0.14em] uppercase"
               >
-                <Phone className="size-5" strokeWidth={1.75} aria-hidden />
-                {t('call')}
-              </a>
-            ) : null}
-            {!expired && whatsappLink ? (
-              <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="pressable focus-ring border-border bg-surface flex min-h-12 items-center justify-center gap-2 rounded-md border text-[15px] font-medium"
+                {t('findUs')}
+              </h2>
+              <m.ul
+                className="border-border bg-surface divide-border mt-3 divide-y overflow-hidden rounded-lg border"
+                variants={variantsFor(reduced, staggerContainer)}
+                initial="hidden"
+                animate="show"
               >
-                <MessageCircle className="size-5" strokeWidth={1.75} aria-hidden />
-                {t('whatsapp')}
-              </a>
-            ) : null}
-            {!expired && data.slug ? (
-              <a
-                href={`/api/vcard/${data.slug}`}
-                className="pressable focus-ring border-border bg-surface text-text-secondary flex min-h-12 items-center justify-center gap-2 rounded-md border text-[15px] font-medium"
-              >
-                <BookmarkPlus className="size-5" strokeWidth={1.75} aria-hidden />
-                {t('saveContact')}
-              </a>
-            ) : null}
-          </div>
-        )}
+                {links.map((link, index) => (
+                  <m.li key={`${link.type}-${link.value}-${index}`} variants={variantsFor(reduced, fadeUp)}>
+                    <ProfileLinkRow
+                      type={link.type}
+                      href={link.value}
+                      label={
+                        pick(locale, link.labelFr ?? null, link.labelAr ?? null) ||
+                        t(`linkType.${link.type}`)
+                      }
+                    />
+                  </m.li>
+                ))}
+              </m.ul>
+            </section>
+          ) : null}
 
-        {!expired && displayLinks.length > 0 ? (
-          <section className="mt-8 space-y-2" aria-label={t('links')}>
-            {displayLinks.map((link, index) => {
-              if (link.type !== 'email' && link.type !== 'phone' && !isSafeProfileUrl(link.value)) {
-                return null;
-              }
-              const label =
-                pick(
-                  locale,
-                  link.labelFr ?? null,
-                  link.labelAr ?? null,
-                ) || t(`linkType.${link.type}`);
-              return (
-                <ProfileLinkRow
-                  key={`${link.type}-${link.value}-${index}`}
-                  type={link.type}
-                  href={link.value}
-                  label={label}
-                  index={index}
+          {!expired && data.hours ? <ProfileHours hours={data.hours} locale={locale} /> : null}
+
+          {!preview ? (
+            <footer className="mt-auto pt-12">
+              <Link
+                href="/"
+                locale={currentLocale}
+                className="pressable focus-ring border-border bg-surface hover:bg-surface-raised/60 flex items-center gap-4 rounded-lg border p-4 transition-colors"
+              >
+                <span
+                  aria-hidden
+                  className="profile-mini-card flex h-11 w-[70px] shrink-0 items-end justify-between rounded-[6px] p-1.5"
+                >
+                  <span className="text-[7px] leading-none font-semibold tracking-[0.2em]">BITAQA</span>
+                  <Nfc className="size-3.5" strokeWidth={1.75} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="text-text block text-[14px] leading-snug font-medium">
+                    {t('ctaOrder')}
+                  </span>
+                  <span className="text-accent mt-0.5 block text-[13px] font-medium">
+                    {t('ctaLink')}
+                  </span>
+                </span>
+                <ArrowRight
+                  className="text-text-muted size-[18px] shrink-0 rtl:-scale-x-100"
+                  strokeWidth={1.75}
+                  aria-hidden
                 />
-              );
-            })}
-          </section>
-        ) : null}
+              </Link>
+            </footer>
+          ) : null}
 
-        {!expired && data.hours ? <ProfileHours hours={data.hours} locale={locale} /> : null}
-
-        {!preview ? (
-          <footer className="border-border mt-auto border-t pt-8 pb-4">
-            <p className="text-text-muted text-center text-[12px] tracking-[0.14em] uppercase">
-              Bitaqa
-            </p>
-            <p className="text-text-secondary mt-2 text-center text-[14px] leading-relaxed">
-              {t('ctaOrder')}
-            </p>
-            <Link
-              href="/"
-              locale={currentLocale}
-              className="pressable focus-ring text-accent mt-3 flex min-h-11 items-center justify-center text-[14px] font-medium"
+          {hasDock ? (
+            <m.nav
+              aria-label={t('contactActions')}
+              initial={reduced ? false : { opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...transitionBase, delay: reduced ? 0 : 0.18 }}
+              className={cn(
+                'border-border bg-bg/90 z-30 border-t backdrop-blur-md',
+                preview ? 'sticky bottom-0 -mx-5 mt-8' : 'fixed inset-x-0 bottom-0',
+              )}
+              style={{
+                paddingBottom: preview ? '0.75rem' : 'max(0.75rem, env(safe-area-inset-bottom))',
+              }}
             >
-              {t('ctaLink')}
-            </Link>
-          </footer>
-        ) : null}
+              <div
+                className="mx-auto grid max-w-md gap-2 px-5 pt-3"
+                style={{ gridTemplateColumns: `repeat(${actions.length}, minmax(0, 1fr))` }}
+              >
+                {actions.map((action) => {
+                  const Icon = action.icon;
+                  const single = actions.length === 1;
+                  return (
+                    <a
+                      key={action.key}
+                      href={action.href}
+                      target={action.external ? '_blank' : undefined}
+                      rel={action.external ? 'noopener noreferrer' : undefined}
+                      className={cn(
+                        'pressable focus-ring flex min-h-14 items-center justify-center rounded-md font-medium',
+                        single ? 'flex-row gap-2 text-[15px]' : 'flex-col gap-1 text-[12px]',
+                        action.primary
+                          ? 'bg-accent text-accent-fg'
+                          : 'border-border bg-surface text-text border',
+                      )}
+                    >
+                      <Icon className="size-5" strokeWidth={1.75} aria-hidden />
+                      <span className="max-w-full truncate px-1">{action.label}</span>
+                    </a>
+                  );
+                })}
+              </div>
+            </m.nav>
+          ) : null}
+        </div>
       </div>
     </LazyMotion>
   );

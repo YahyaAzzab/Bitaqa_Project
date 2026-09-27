@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  ArrowUpRight,
   Facebook,
   Globe,
   Instagram,
@@ -28,11 +29,12 @@ const ICONS: Partial<Record<LinkType, typeof Globe>> = {
   custom: Link2,
 };
 
+const HANDLE_TYPES: ReadonlySet<LinkType> = new Set(['instagram', 'tiktok', 'facebook']);
+
 type Props = {
   type: LinkType;
   href: string;
   label: string;
-  index: number;
 };
 
 function resolveHref(type: LinkType, value: string): string | null {
@@ -45,26 +47,56 @@ function resolveHref(type: LinkType, value: string): string | null {
   return isSafeProfileUrl(value) ? value : null;
 }
 
-export function ProfileLinkRow({ type, href, label, index }: Props) {
+/** Ce que le visiteur reconnaît : le @pseudo, le domaine ou l’adresse e-mail. */
+function linkDetail(type: LinkType, value: string): string | null {
+  if (type === 'email') return value;
+  if (type === 'maps' || type === 'phone' || type === 'whatsapp') return null;
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, '');
+    if (HANDLE_TYPES.has(type)) {
+      const handle = url.pathname.split('/').filter(Boolean)[0]?.replace(/^@/, '');
+      return handle ? `@${handle}` : host;
+    }
+    return host;
+  } catch {
+    return null;
+  }
+}
+
+export function ProfileLinkRow({ type, href, label }: Props) {
   const Icon = ICONS[type] ?? Link2;
   const safe = resolveHref(type, href);
   if (!safe) return null;
+  const detail = linkDetail(type, href);
+  const external = safe.startsWith('http');
 
   return (
     <a
       href={safe}
-      target={safe.startsWith('http') ? '_blank' : undefined}
-      rel={safe.startsWith('http') ? 'noopener noreferrer' : undefined}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener noreferrer' : undefined}
       className={cn(
-        'pressable border-border bg-surface focus-ring flex min-h-14 items-center gap-3 rounded-lg border px-4',
-        'transition-colors duration-[150ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-accent/35',
+        'group pressable focus-ring flex min-h-16 items-center gap-3 px-4 py-3',
+        'transition-colors duration-[150ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-surface-raised/60',
       )}
-      style={{ animationDelay: `${index * 45}ms` }}
     >
-      <span className="bg-surface-raised text-accent flex size-10 items-center justify-center rounded-md">
-        <Icon className="size-5" strokeWidth={1.75} aria-hidden />
+      <span className="border-border bg-bg text-accent flex size-10 shrink-0 items-center justify-center rounded-md border">
+        <Icon className="size-[18px]" strokeWidth={1.75} aria-hidden />
       </span>
-      <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{label}</span>
+      <span className="min-w-0 flex-1">
+        <span className="text-text block truncate text-[15px] font-medium">{label}</span>
+        {detail ? (
+          <span className="text-text-muted block truncate text-[13px]">
+            <bdi dir="ltr">{detail}</bdi>
+          </span>
+        ) : null}
+      </span>
+      <ArrowUpRight
+        className="text-text-muted group-hover:text-text size-[18px] shrink-0 transition-colors rtl:-scale-x-100"
+        strokeWidth={1.75}
+        aria-hidden
+      />
     </a>
   );
 }

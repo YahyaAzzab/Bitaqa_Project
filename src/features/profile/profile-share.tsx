@@ -61,18 +61,30 @@ export function ProfileShareControls({ url, title }: Props) {
 
   return (
     <>
-      <div className="flex items-center gap-2">
-        <IconButton label={t('share')} onClick={() => void share()}>
-          <Share2 className="size-5" strokeWidth={1.75} />
+      <div className="border-border bg-surface/70 flex items-center rounded-full border p-0.5">
+        <IconButton
+          label={t('share')}
+          className="text-text-secondary hover:text-text rounded-full"
+          onClick={() => void share()}
+        >
+          <Share2 className="size-[18px]" strokeWidth={1.75} />
         </IconButton>
-        <IconButton label={t('showQr')} onClick={() => setQrOpen(true)}>
-          <QrCode className="size-5" strokeWidth={1.75} />
+        <IconButton
+          label={t('showQr')}
+          className="text-text-secondary hover:text-text rounded-full"
+          onClick={() => setQrOpen(true)}
+        >
+          <QrCode className="size-[18px]" strokeWidth={1.75} />
         </IconButton>
-        <IconButton label={t('copyLink')} onClick={() => void copy()}>
+        <IconButton
+          label={t('copyLink')}
+          className="text-text-secondary hover:text-text rounded-full"
+          onClick={() => void copy()}
+        >
           {copied ? (
-            <Check className="size-5 text-success" strokeWidth={1.75} />
+            <Check className="text-success size-[18px]" strokeWidth={1.75} />
           ) : (
-            <Copy className="size-5" strokeWidth={1.75} />
+            <Copy className="size-[18px]" strokeWidth={1.75} />
           )}
         </IconButton>
       </div>

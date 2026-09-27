@@ -3,6 +3,7 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { getSellerSession } from '@/lib/auth/session';
+import { env } from '@/lib/env';
 import { themeToDb } from '@/lib/profile/theme';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/database.types';
@@ -30,6 +31,12 @@ const updateSchema = z.object({
     .regex(/^#[0-9a-fA-F]{6}$/)
     .optional(),
   theme: z.enum(['noir', 'ivoire']).optional(),
+  logoUrl: z
+    .string()
+    .url()
+    .refine((url) => url.startsWith(`${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/`))
+    .nullable()
+    .optional(),
 });
 
 async function revalidateProfile(slug: string, id: string) {
@@ -132,6 +139,7 @@ export async function updateProfile(
   if (parsed.data.addressFr !== undefined) patch.address_fr = parsed.data.addressFr;
   if (parsed.data.accentColor !== undefined) patch.accent_color = parsed.data.accentColor;
   if (parsed.data.theme !== undefined) patch.theme = themeToDb(parsed.data.theme);
+  if (parsed.data.logoUrl !== undefined) patch.logo_url = parsed.data.logoUrl;
 
   const { error } = await supabase.from('profiles').update(patch).eq('id', profile.id);
   if (error) return { ok: false, error: 'generic' };

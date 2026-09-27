@@ -3,7 +3,8 @@ import { setRequestLocale } from 'next-intl/server';
 import { ReadyScreen } from '@/features/wizard/ready-screen';
 import type { Locale } from '@/i18n/config';
 import { getSellerSession } from '@/lib/auth/session';
-import { env, isSupabaseConfigured } from '@/lib/env';
+import { isSupabaseConfigured } from '@/lib/env';
+import { publicProfileUrl } from '@/lib/site-url';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export default async function ReadyPage({
@@ -31,8 +32,7 @@ export default async function ReadyPage({
   const { data: profile } = await profileQuery.maybeSingle();
   if (!profile) notFound();
 
-  const site = env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
-  const profileUrl = `${site}/${locale}/${profile.slug}`;
+  const profileUrl = publicProfileUrl(locale, profile.slug);
   const name =
     locale === 'ar'
       ? profile.business_name_ar || profile.business_name_fr

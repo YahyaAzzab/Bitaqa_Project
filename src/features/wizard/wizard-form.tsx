@@ -3,6 +3,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+  ArrowLeft,
+  ArrowRight,
   Check,
   Eye,
   Facebook,
@@ -10,6 +12,7 @@ import {
   Instagram,
   Link2,
   Music2,
+  X,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
@@ -27,7 +30,8 @@ import { ProfileView } from '@/features/profile/profile-view';
 import { clearWizardDraft, loadWizardDraft, saveWizardDraft } from '@/features/wizard/draft';
 import { checkSlugAvailable, createProfile } from '@/features/wizard/actions';
 import { LogoPicker } from '@/features/wizard/logo-picker';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
+import { useKeyboardOffset } from '@/hooks/use-keyboard-offset';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { formatMad } from '@/lib/money';
 import {
@@ -42,6 +46,7 @@ import {
 import { suggestSlugAlternatives, transliterateToSlug } from '@/lib/profile/slug';
 import { buildSocialUrl } from '@/lib/profile/urls';
 import type { ProfilePreviewData } from '@/lib/profile/types';
+import { publicProfileUrl } from '@/lib/site-url';
 import { cn } from '@/lib/utils';
 
 const STEPS: WizardStep[] = ['business', 'contact', 'links', 'identity', 'plan'];
@@ -79,10 +84,12 @@ function toPreview(values: WizardFormValues): ProfilePreviewData {
 export function WizardForm() {
   const t = useTranslations('dashboard.wizard');
   const tProfile = useTranslations('profile');
+  const tCommon = useTranslations('common');
   const locale = useLocale() as 'fr' | 'ar';
   const router = useRouter();
   const { toast } = useToast();
   const reduced = useReducedMotion();
+  const keyboardOffset = useKeyboardOffset();
   const [step, setStep] = useState(0);
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'ok' | 'taken'>('idle');
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -219,18 +226,26 @@ export function WizardForm() {
     () => toPreview({ ...wizardDefaults, ...watched } as WizardFormValues),
     [watched],
   );
-  const siteUrl =
-    typeof window !== 'undefined' ? window.location.origin : 'https://bitaqa.ma';
-  const previewUrl = `${siteUrl}/${locale}/${watched.slug || 'apercu'}`;
+  const previewUrl = publicProfileUrl(locale, watched.slug || 'apercu');
 
   const dirOffset = locale === 'ar' ? -24 : 24;
 
   return (
-    <div className="mx-auto w-full max-w-lg pb-28">
+    <div className="mx-auto w-full max-w-lg pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0">
       <div className="mb-5">
-        <p className="text-text-muted text-[12px] font-medium tracking-wide uppercase">
-          {t('step', { current: step + 1, total: STEPS.length })}
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-text-muted text-[12px] font-medium tracking-wide uppercase">
+            {t('step', { current: step + 1, total: STEPS.length })}
+          </p>
+          <Link
+            href="/dashboard"
+            prefetch
+            aria-label={tCommon('close')}
+            className="pressable focus-ring text-text-secondary -me-3 inline-flex size-12 items-center justify-center rounded-md md:hidden"
+          >
+            <X className="size-5" strokeWidth={1.75} />
+          </Link>
+        </div>
         <div className="bg-surface mt-2 h-1.5 overflow-hidden rounded-full">
           <div
             className="bg-accent h-full rounded-full transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
@@ -535,14 +550,22 @@ export function WizardForm() {
 
       <div
         className={cn(
-          'border-border bg-bg/95 fixed inset-x-0 bottom-0 z-30 border-t backdrop-blur-md',
+          'border-border bg-bg/95 fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur-md',
           'px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:static md:mt-8 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none',
+          'transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] md:transform-none',
         )}
+        style={keyboardOffset > 0 ? { transform: `translateY(-${keyboardOffset}px)` } : undefined}
       >
         <div className="mx-auto flex max-w-lg gap-2">
           {step > 0 ? (
-            <Button type="button" variant="secondary" className="min-w-20" onClick={goBack}>
-              ←
+            <Button
+              type="button"
+              variant="secondary"
+              className="min-w-12"
+              onClick={goBack}
+              aria-label={tCommon('back')}
+            >
+              <ArrowLeft className="size-5 rtl:-scale-x-100" strokeWidth={1.75} aria-hidden />
             </Button>
           ) : null}
           <Button
@@ -556,7 +579,8 @@ export function WizardForm() {
           </Button>
           {step < STEPS.length - 1 ? (
             <Button type="button" className="flex-1" onClick={() => void goNext()}>
-              →
+              {tCommon('next')}
+              <ArrowRight className="size-5 rtl:-scale-x-100" strokeWidth={1.75} aria-hidden />
             </Button>
           ) : (
             <Button

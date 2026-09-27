@@ -1,8 +1,9 @@
 import type { MetadataRoute } from 'next';
 import { locales } from '@/i18n/config';
+import { publicSiteUrl } from '@/lib/site-url';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const site = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+  const site = publicSiteUrl();
   const now = new Date();
 
   const staticPaths = ['', '/legal', '/legal/privacy'];

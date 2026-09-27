@@ -184,7 +184,9 @@
       "saved": "Profil mis à jour",
       "renewed": "Renouvelé d’un an",
       "confirmRenew": "Encaisser le renouvellement et prolonger d’un an ?",
-      "confirmSuspend": "Suspendre ce profil ? Le lien restera, le contenu sera réduit."
+      "confirmSuspend": "Suspendre ce profil ? Le lien restera, le contenu sera réduit.",
+      "logoSaved": "Logo mis à jour sur la carte",
+      "logoSaveFailed": "Le logo n’a pas pu être enregistré. Réessayez."
     },
     "cash": {
       "title": "Caisse",
@@ -288,6 +290,9 @@
     "call": "Appeler",
     "whatsapp": "WhatsApp",
     "saveContact": "Enregistrer le contact",
+    "saveShort": "Enregistrer",
+    "findUs": "Nous retrouver",
+    "contactActions": "Contacter",
     "links": "Liens",
     "hours": "Horaires",
     "openNow": "Ouvert maintenant",

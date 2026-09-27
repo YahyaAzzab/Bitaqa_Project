@@ -62,6 +62,8 @@ export function DashboardShell({ children }: Props) {
   const autoKey = TITLE_KEYS.find((item) => item.match(pathname))?.key ?? 'title';
   const title = t(autoKey);
   const showSettings = !pathname.startsWith('/dashboard/settings');
+  // The creation flow owns the thumb zone with its own action bar.
+  const focusedFlow = pathname.startsWith('/dashboard/new');
 
   return (
     <div className="bg-bg text-text mx-auto flex min-h-dvh w-full max-w-lg flex-col md:max-w-none md:flex-row">
@@ -137,12 +139,20 @@ export function DashboardShell({ children }: Props) {
           </div>
         </header>
 
-        <main className="flex-1 px-4 pt-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-8">
+        <main
+          className={cn(
+            'flex-1 px-4 pt-4 md:pb-8',
+            focusedFlow ? 'pb-4' : 'pb-[calc(5.5rem+env(safe-area-inset-bottom))]',
+          )}
+        >
           {children}
         </main>
 
         <nav
-          className="border-border bg-bg/95 fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur-md md:hidden"
+          className={cn(
+            'border-border bg-bg/95 fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur-md md:hidden',
+            focusedFlow && 'hidden',
+          )}
           style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
           aria-label="Navigation"
         >

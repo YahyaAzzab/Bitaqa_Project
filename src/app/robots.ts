@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
+import { publicSiteUrl } from '@/lib/site-url';
 
 export default function robots(): MetadataRoute.Robots {
-  const site = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+  const site = publicSiteUrl();
   return {
     rules: [
       {

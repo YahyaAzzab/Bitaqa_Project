@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ProfileView } from '@/features/profile/profile-view';
 import type { Locale } from '@/i18n/config';
-import { env, isSupabaseConfigured } from '@/lib/env';
 import { getCachedPublicProfile } from '@/lib/profile/cache';
+import { publicProfileUrl, publicSiteUrl } from '@/lib/site-url';
 import { resolveProfileTheme } from '@/lib/profile/theme';
 import type { ProfilePreviewData, PublicProfile } from '@/lib/profile/types';
 
@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     (locale === 'ar' ? profile.tagline_fr : profile.tagline_ar) ||
     undefined;
 
-  const site = isSupabaseConfigured() ? env.NEXT_PUBLIC_SITE_URL : 'http://localhost:3000';
+  const site = publicSiteUrl();
   const url = `${site}/${locale}/${slug}`;
 
   return {
@@ -120,10 +120,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
     notFound();
   }
 
-  const site = isSupabaseConfigured()
-    ? env.NEXT_PUBLIC_SITE_URL
-    : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  const profileUrl = `${site.replace(/\/$/, '')}/${locale}/${slug}`;
+  const profileUrl = publicProfileUrl(locale, slug);
   const data = toPreview(profile);
 
   return (

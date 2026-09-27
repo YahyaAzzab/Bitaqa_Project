@@ -28,21 +28,29 @@ export function ProfileHours({ hours, locale }: Props) {
   const dayLabel = (key: DayKey) => t(`day.${key}`);
 
   return (
-    <section className="mt-8" aria-labelledby="hours-heading">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 id="hours-heading" className="text-[13px] font-medium tracking-[0.12em] uppercase text-text-muted">
+    <section className="mt-10" aria-labelledby="hours-heading">
+      <div className="flex items-center justify-between gap-3">
+        <h2
+          id="hours-heading"
+          className="text-text-muted text-[12px] font-medium tracking-[0.14em] uppercase"
+        >
           {t('hours')}
         </h2>
         <span
           className={cn(
-            'rounded-sm px-2 py-0.5 text-[12px] font-medium',
+            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-medium',
             open ? 'bg-success/15 text-success' : 'bg-surface-raised text-text-muted',
           )}
+          aria-live="polite"
         >
+          <span
+            className={cn('size-1.5 rounded-full', open ? 'bg-success' : 'bg-text-muted')}
+            aria-hidden
+          />
           {open ? t('openNow') : t('closedNow')}
         </span>
       </div>
-      <ul className="mt-3 space-y-2">
+      <ul className="border-border bg-surface mt-3 space-y-2.5 rounded-lg border p-4">
         {ORDER.map((key) => {
           const slots = hours[key] ?? [];
           const isToday = key === today;

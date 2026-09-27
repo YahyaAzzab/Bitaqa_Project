@@ -6,12 +6,12 @@ import { OrdersBoard } from '@/features/orders/orders-board';
 import type { OrderCardData } from '@/features/orders/order-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Locale } from '@/i18n/config';
+import { publicSiteUrl } from '@/lib/site-url';
 
 export function OrdersClient() {
   const locale = useLocale() as Locale;
   const [orders, setOrders] = useState<OrderCardData[] | null>(null);
-  const siteUrl =
-    typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+  const siteUrl = publicSiteUrl();
 
   useEffect(() => {
     let cancelled = false;
