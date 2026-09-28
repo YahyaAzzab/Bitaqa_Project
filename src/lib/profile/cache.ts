@@ -6,19 +6,20 @@ import { createServiceClient } from '@/lib/supabase/service';
 
 export type PublicProfileState =
   | { kind: 'live'; profile: PublicProfile }
-  | { kind: 'suspended'; nameFr: string; nameAr: string | null }
+  | { kind: 'suspended'; nameFr: string; nameAr: string | null; reason: string | null }
   | { kind: 'missing' };
 
 /**
- * RLS hides suspended profiles from visitors; only their name is read back (server side)
- * so the card can say "suspended" instead of pretending the link never existed.
+ * RLS hides suspended profiles from visitors; only the name and the admin's reason are read
+ * back (server side) so the card can say "suspended" instead of pretending the link never
+ * existed. `*` keeps this working before the suspension_reason migration is applied.
  */
-async function getSuspendedProfileName(slug: string) {
+async function getSuspendedProfile(slug: string) {
   if (!isSupabaseConfigured()) return null;
   try {
     const { data } = await createServiceClient()
       .from('profiles')
-      .select('business_name_fr, business_name_ar')
+      .select('*')
       .eq('slug', slug)
       .eq('status', 'suspended')
       .maybeSingle();
@@ -32,12 +33,13 @@ async function loadPublicProfileState(slug: string): Promise<PublicProfileState>
   const profile = await getPublicProfileBySlug(slug);
   if (profile && profile.status !== 'suspended') return { kind: 'live', profile };
 
-  const suspended = await getSuspendedProfileName(slug);
+  const suspended = await getSuspendedProfile(slug);
   if (!suspended) return { kind: 'missing' };
   return {
     kind: 'suspended',
     nameFr: suspended.business_name_fr,
     nameAr: suspended.business_name_ar,
+    reason: suspended.suspension_reason ?? null,
   };
 }
 

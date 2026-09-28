@@ -10,6 +10,8 @@ export const PLAN_PRICES = {
   signature: 299,
 } as const;
 
+export const SUSPENSION_REASON_MAX = 280;
+
 export const ACCENT_DEFAULT = '#c9a96e';
 
 const linkTypeSchema = z.enum([

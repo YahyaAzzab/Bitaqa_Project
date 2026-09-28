@@ -112,6 +112,7 @@ export type Database = {
           email: string | null;
           hours: Json | null;
           owner_user_id: string | null;
+          suspension_reason: string | null;
           expires_at: string;
           created_at: string;
           updated_at: string;
@@ -136,6 +137,7 @@ export type Database = {
           email?: string | null;
           hours?: Json | null;
           owner_user_id?: string | null;
+          suspension_reason?: string | null;
           expires_at?: string;
           created_at?: string;
           updated_at?: string;
@@ -160,6 +162,7 @@ export type Database = {
           email?: string | null;
           hours?: Json | null;
           owner_user_id?: string | null;
+          suspension_reason?: string | null;
           expires_at?: string;
           created_at?: string;
           updated_at?: string;

@@ -7,6 +7,7 @@ import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import {
   deleteProfile,
@@ -14,7 +15,7 @@ import {
   renewProfile,
   suspendProfile,
 } from '@/features/profiles/actions';
-import { PLAN_PRICES } from '@/lib/profile/schema';
+import { PLAN_PRICES, SUSPENSION_REASON_MAX } from '@/lib/profile/schema';
 import { formatMad } from '@/lib/money';
 
 type Props = {
@@ -22,6 +23,7 @@ type Props = {
   slug: string;
   planCode: string;
   suspended: boolean;
+  suspensionReason: string | null;
   businessName: string;
   isAdmin: boolean;
   locale: 'fr' | 'ar';
@@ -37,6 +39,7 @@ export function ProfileActions({
   slug,
   planCode,
   suspended,
+  suspensionReason,
   businessName,
   isAdmin,
   locale,
@@ -50,6 +53,7 @@ export function ProfileActions({
   const renewalDefault = planCode === 'signature' ? PLAN_PRICES.signature : PLAN_PRICES.essentiel;
   const [amount, setAmount] = useState<number>(renewalDefault);
   const [confirmName, setConfirmName] = useState('');
+  const [reason, setReason] = useState('');
   const [pending, start] = useTransition();
 
   const errorMessage = (code: string) =>
@@ -81,10 +85,10 @@ export function ProfileActions({
 
   const onSuspend = () =>
     run(
-      () => suspendProfile(profileId),
+      () => suspendProfile(profileId, reason),
       () => {
         toast({ title: t('suspended'), variant: 'success' });
-        setOpen(null);
+        closeDialog();
         router.refresh();
       },
     );
@@ -111,6 +115,7 @@ export function ProfileActions({
   const closeDialog = () => {
     setOpen(null);
     setConfirmName('');
+    setReason('');
   };
 
   const deleteConfirmed = confirmName.trim().toLowerCase() === businessName.trim().toLowerCase();
@@ -147,6 +152,16 @@ export function ProfileActions({
 
       {isAdmin ? (
         <div className="border-border mt-4 space-y-2 border-t pt-4">
+          {suspended && suspensionReason ? (
+            <div className="border-border bg-surface rounded-md border px-4 py-3">
+              <p className="text-text-muted text-[12px] font-medium tracking-wide">
+                {t('suspendReasonLabel')}
+              </p>
+              <p className="mt-1 text-[14px] leading-relaxed break-words whitespace-pre-line">
+                {suspensionReason}
+              </p>
+            </div>
+          ) : null}
           {suspended ? (
             <Button variant="secondary" className="w-full" loading={pending} onClick={onReactivate}>
               <RotateCcw className="size-4" strokeWidth={1.75} />
@@ -213,6 +228,21 @@ export function ProfileActions({
         }
       >
         <p className="text-text-secondary text-[14px]">{t('confirmSuspend')}</p>
+        <div className="mt-4">
+          <Textarea
+            label={t('suspendReasonLabel')}
+            hint={t('suspendReasonHint', {
+              count: SUSPENSION_REASON_MAX - reason.length,
+            })}
+            placeholder={t('suspendReasonPlaceholder')}
+            maxLength={SUSPENSION_REASON_MAX}
+            rows={3}
+            enterKeyHint="done"
+            className="text-[16px]"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+        </div>
       </Dialog>
 
       <Dialog

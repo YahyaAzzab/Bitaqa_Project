@@ -6,9 +6,10 @@ import type { Locale } from '@/i18n/config';
 type Props = {
   locale: Locale;
   name: string;
+  reason: string | null;
 };
 
-export async function SuspendedProfile({ locale, name }: Props) {
+export async function SuspendedProfile({ locale, name, reason }: Props) {
   const t = await getTranslations({ locale, namespace: 'profile' });
 
   return (
@@ -30,6 +31,19 @@ export async function SuspendedProfile({ locale, name }: Props) {
         <p className="text-text-secondary mt-3 max-w-xs text-[15px] leading-relaxed">
           {t('suspendedBody')}
         </p>
+        {reason ? (
+          <figure className="border-border bg-surface mt-6 w-full rounded-lg border px-4 py-3 text-start">
+            <figcaption className="text-text-muted text-[12px] font-medium tracking-wide">
+              {t('suspendedReason')}
+            </figcaption>
+            <p
+              dir="auto"
+              className="mt-1 text-[15px] leading-relaxed break-words whitespace-pre-line"
+            >
+              {reason}
+            </p>
+          </figure>
+        ) : null}
       </div>
 
       <div className="border-border border-t pt-5 text-center">

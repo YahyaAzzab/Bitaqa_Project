@@ -8,6 +8,7 @@ export type OwnerProfileMeta = {
   id: string;
   slug: string;
   status: 'active' | 'expired' | 'suspended';
+  suspensionReason: string | null;
   planCode: string;
   expiresAt: string;
   defaultLang: 'fr' | 'ar';
@@ -116,6 +117,7 @@ export async function loadOwnerProfile(profileId: string) {
     id: profile.id,
     slug: profile.slug,
     status: profile.status,
+    suspensionReason: profile.status === 'suspended' ? (profile.suspension_reason ?? null) : null,
     planCode: profile.plan_code,
     expiresAt: profile.expires_at,
     defaultLang: profile.default_lang === 'ar' ? 'ar' : 'fr',

@@ -123,7 +123,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
   if (state.kind === 'missing') notFound();
   if (state.kind === 'suspended') {
     const name = locale === 'ar' ? state.nameAr || state.nameFr : state.nameFr;
-    return <SuspendedProfile locale={locale} name={name} />;
+    return <SuspendedProfile locale={locale} name={name} reason={state.reason} />;
   }
 
   const profileUrl = publicProfileUrl(locale, slug);

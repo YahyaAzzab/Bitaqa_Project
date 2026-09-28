@@ -330,6 +330,14 @@ export function AccountEditor({
                     ? t('suspendedBody')
                     : t('expiredBody', { date: expires })}
                 </p>
+                {meta.suspensionReason ? (
+                  <p className="border-warning/30 mt-3 border-s-2 ps-3 text-[14px] leading-relaxed break-words whitespace-pre-line">
+                    <span className="text-text-muted block text-[12px] font-medium">
+                      {t('suspendedReason')}
+                    </span>
+                    <span dir="auto">{meta.suspensionReason}</span>
+                  </p>
+                ) : null}
                 <div className="mt-3 flex flex-wrap gap-2">
                   {TEAM_PHONES.map((phone) => (
                     <a

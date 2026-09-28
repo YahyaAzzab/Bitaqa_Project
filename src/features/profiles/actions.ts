@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { getSellerSession } from '@/lib/auth/session';
 import { env } from '@/lib/env';
 import { revalidatePublicProfile } from '@/lib/profile/revalidate-public';
+import { SUSPENSION_REASON_MAX } from '@/lib/profile/schema';
 import { themeToDb } from '@/lib/profile/theme';
 import { THEME_IDS } from '@/lib/profile/themes';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
@@ -86,26 +87,38 @@ export async function renewProfile(
   return { ok: true };
 }
 
-export async function suspendProfile(profileId: string): Promise<ProfileActionResult> {
+const suspendSchema = z.object({
+  profileId: z.string().uuid(),
+  reason: z
+    .string()
+    .trim()
+    .max(SUSPENSION_REASON_MAX)
+    .transform((value) => value || null),
+});
+
+export async function suspendProfile(
+  profileId: string,
+  reason: string,
+): Promise<ProfileActionResult> {
   const session = await getSellerSession();
   if (!session) return { ok: false, error: 'unauthorized' };
   if (session.seller.role !== 'admin') return { ok: false, error: 'forbidden' };
 
-  const id = z.string().uuid().safeParse(profileId);
-  if (!id.success) return { ok: false, error: 'invalid' };
+  const parsed = suspendSchema.safeParse({ profileId, reason });
+  if (!parsed.success) return { ok: false, error: 'invalid' };
 
   const supabase = await createServerSupabaseClient();
   const { data: profile } = await supabase
     .from('profiles')
     .select('id, slug')
-    .eq('id', id.data)
+    .eq('id', parsed.data.profileId)
     .maybeSingle();
 
   if (!profile) return { ok: false, error: 'not_found' };
 
   const { data: updated, error } = await supabase
     .from('profiles')
-    .update({ status: 'suspended' })
+    .update({ status: 'suspended', suspension_reason: parsed.data.reason })
     .eq('id', profile.id)
     .select('id');
 
@@ -137,7 +150,7 @@ export async function reactivateProfile(profileId: string): Promise<ProfileActio
   const status = new Date(profile.expires_at).getTime() > Date.now() ? 'active' : 'expired';
   const { data: updated, error } = await supabase
     .from('profiles')
-    .update({ status })
+    .update({ status, suspension_reason: null })
     .eq('id', profile.id)
     .select('id');
   if (error || !updated?.length) return { ok: false, error: 'generic' };

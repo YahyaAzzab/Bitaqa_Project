@@ -16,6 +16,7 @@ Renseignez les clés Supabase dans `.env.local`, puis appliquez **dans l’ordre
 3. `supabase/migrations/20260928120000_client_accounts.sql`
 4. `supabase/migrations/20260928150000_owner_credentials.sql`
 5. `supabase/migrations/20260928170000_admin_delete_profile.sql`
+6. `supabase/migrations/20260928180000_suspension_reason.sql`
 
 (SQL Editor Supabase ou CLI).
 
