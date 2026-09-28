@@ -3,9 +3,12 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { provisionProfileOwner } from '@/features/profiles/owner-provision';
+import { decryptCredential, encryptCredential } from '@/lib/auth/credential-cipher';
+import { OWNER_PASSWORD_MAX, OWNER_PASSWORD_MIN } from '@/lib/auth/owner-password';
 import { getSellerSession } from '@/lib/auth/session';
 import { rateLimit } from '@/lib/rate-limit';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 
 export type OwnerActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -57,6 +60,7 @@ export async function inviteProfileOwner(
     currentOwnerId: profile.owner_user_id,
     email,
     locale,
+    actorId: session.userId,
   });
   if (!result.ok) return { ok: false, error: result.error };
 
@@ -80,4 +84,76 @@ export async function revokeProfileOwner(profileId: string): Promise<OwnerAction
 
   revalidateDetail(profile.id);
   return { ok: true, data: undefined };
+}
+
+type ManagedProfile = Exclude<Awaited<ReturnType<typeof loadManagedProfile>>, { error: string }>;
+
+async function loadAdminOwner(
+  profileId: string,
+): Promise<{ ok: false; error: string } | ({ ok: true; ownerId: string } & ManagedProfile)> {
+  const loaded = await loadManagedProfile(profileId);
+  if ('error' in loaded) return { ok: false, error: loaded.error ?? 'generic' };
+  if (loaded.session.seller.role !== 'admin') return { ok: false, error: 'forbidden' };
+  if (!loaded.profile.owner_user_id) return { ok: false, error: 'no_owner' };
+  return { ok: true, ...loaded, ownerId: loaded.profile.owner_user_id };
+}
+
+const clientPasswordSchema = z.object({
+  profileId: z.string().uuid(),
+  password: z.string().min(OWNER_PASSWORD_MIN).max(OWNER_PASSWORD_MAX),
+});
+
+/** Réservé à l'admin : remplace le mot de passe du commerçant et en garde une copie chiffrée. */
+export async function setClientPassword(
+  raw: z.input<typeof clientPasswordSchema>,
+): Promise<OwnerActionResult<{ password: string; setAt: string }>> {
+  const parsed = clientPasswordSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: 'password_short' };
+  const { profileId, password } = parsed.data;
+
+  const loaded = await loadAdminOwner(profileId);
+  if (!loaded.ok) return { ok: false, error: loaded.error };
+  const { session, ownerId, profile } = loaded;
+
+  if (!rateLimit(`client-password:${session.userId}`, { limit: 30, windowMs: 60 * 60_000 }).ok) {
+    return { ok: false, error: 'rate_limited' };
+  }
+
+  const admin = createServiceClient();
+  const { error } = await admin.auth.admin.updateUserById(ownerId, {
+    password,
+    user_metadata: { password_set: true },
+  });
+  if (error) {
+    return { ok: false, error: error.code === 'weak_password' ? 'password_weak' : 'generic' };
+  }
+
+  const setAt = new Date().toISOString();
+  const { error: storeError } = await admin.from('owner_credentials').upsert({
+    user_id: ownerId,
+    password_cipher: encryptCredential(password),
+    set_by: session.userId,
+    set_at: setAt,
+  });
+  if (storeError) return { ok: false, error: 'password_not_stored' };
+
+  revalidateDetail(profile.id);
+  return { ok: true, data: { password, setAt } };
+}
+
+export async function revealClientPassword(
+  profileId: string,
+): Promise<OwnerActionResult<{ password: string | null }>> {
+  const id = z.string().uuid().safeParse(profileId);
+  if (!id.success) return { ok: false, error: 'invalid' };
+
+  const loaded = await loadAdminOwner(id.data);
+  if (!loaded.ok) return { ok: false, error: loaded.error };
+
+  const { data } = await createServiceClient()
+    .from('owner_credentials')
+    .select('password_cipher')
+    .eq('user_id', loaded.ownerId)
+    .maybeSingle();
+  return { ok: true, data: { password: data ? decryptCredential(data.password_cipher) : null } };
 }

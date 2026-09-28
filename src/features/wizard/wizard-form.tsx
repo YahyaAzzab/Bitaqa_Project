@@ -2,24 +2,14 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Eye,
-  Facebook,
-  Globe,
-  Instagram,
-  Link2,
-  Music2,
-  X,
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Eye, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
 import { Input } from '@/components/ui/input';
+import { LinkIcon } from '@/components/ui/link-icon';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Sheet } from '@/components/ui/sheet';
@@ -54,15 +44,6 @@ import { publicProfileUrl } from '@/lib/site-url';
 import { cn } from '@/lib/utils';
 
 const STEPS: WizardStep[] = ['business', 'contact', 'links', 'identity', 'plan'];
-
-const LINK_ICONS: Record<WizardLinkType, typeof Instagram> = {
-  instagram: Instagram,
-  facebook: Facebook,
-  tiktok: Music2,
-  linkedin: Link2,
-  website: Globe,
-  custom: Link2,
-};
 
 function toPreview(values: WizardFormValues): ProfilePreviewData {
   return {
@@ -498,7 +479,7 @@ export function WizardForm() {
                     selected={pendingLinkType === type}
                     onSelect={() => setPendingLinkType(type)}
                   >
-                    {type}
+                    {tProfile(`linkType.${type}`)}
                   </Chip>
                 ))}
               </div>
@@ -523,27 +504,27 @@ export function WizardForm() {
                 {t('addLink')}
               </Button>
               <ul className="space-y-2">
-                {fields.map((field, index) => {
-                  const Icon = LINK_ICONS[field.type as WizardLinkType] ?? Link2;
-                  return (
-                    <li
-                      key={field.id}
-                      className="border-border bg-surface flex min-h-12 items-center gap-3 rounded-md border px-3"
+                {fields.map((field, index) => (
+                  <li
+                    key={field.id}
+                    className="border-border bg-surface flex min-h-14 items-center gap-3 rounded-md border ps-2.5 pe-1"
+                  >
+                    <LinkIcon type={field.type} size="sm" />
+                    <span className="min-w-0 flex-1 truncate text-[14px]" dir="ltr">
+                      {field.value}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={t('removeLink', {
+                        name: tProfile(`linkType.${field.type}` as 'linkType.custom'),
+                      })}
+                      className="text-text-muted hover:text-text pressable focus-ring grid size-12 shrink-0 place-items-center rounded-md"
+                      onClick={() => remove(index)}
                     >
-                      <Icon className="text-accent size-4 shrink-0" strokeWidth={1.75} />
-                      <span className="min-w-0 flex-1 truncate text-[14px]" dir="ltr">
-                        {field.value}
-                      </span>
-                      <button
-                        type="button"
-                        className="text-text-muted pressable focus-ring text-[13px]"
-                        onClick={() => remove(index)}
-                      >
-                        ×
-                      </button>
-                    </li>
-                  );
-                })}
+                      <X className="size-4" strokeWidth={1.75} aria-hidden />
+                    </button>
+                  </li>
+                ))}
               </ul>
             </>
           ) : null}

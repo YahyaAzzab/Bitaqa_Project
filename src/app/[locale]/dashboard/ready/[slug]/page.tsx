@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
-import { loadOwnerEmail } from '@/features/profiles/owner-email';
+import { loadOwnerAccount } from '@/features/profiles/owner-account';
 import { ProfileOwnerAccess } from '@/features/profiles/profile-owner-access';
 import { ReadyScreen } from '@/features/wizard/ready-screen';
 import type { Locale } from '@/i18n/config';
@@ -39,7 +39,7 @@ export default async function ReadyPage({
     locale === 'ar'
       ? profile.business_name_ar || profile.business_name_fr
       : profile.business_name_fr;
-  const ownerEmail = await loadOwnerEmail(profile.owner_user_id);
+  const ownerAccount = await loadOwnerAccount(profile.owner_user_id);
 
   return (
     <ReadyScreen
@@ -51,7 +51,10 @@ export default async function ReadyPage({
         <ProfileOwnerAccess
           profileId={profile.id}
           locale={locale}
-          ownerEmail={ownerEmail}
+          ownerEmail={ownerAccount?.email ?? null}
+          passwordAdmin={
+            session.seller.role === 'admin' ? { setAt: ownerAccount?.passwordSetAt ?? null } : null
+          }
           clientPhone={profile.phone}
           businessName={name}
           handoffSlug={profile.slug}

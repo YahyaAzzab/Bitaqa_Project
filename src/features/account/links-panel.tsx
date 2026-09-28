@@ -1,24 +1,14 @@
 'use client';
 
 import { Reorder, useDragControls } from 'framer-motion';
-import {
-  Facebook,
-  Globe,
-  GripVertical,
-  Instagram,
-  Link2,
-  Linkedin,
-  Music2,
-  Pencil,
-  Plus,
-  Trash2,
-} from 'lucide-react';
+import { GripVertical, Link2, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { IconButton } from '@/components/ui/icon-button';
 import { Input } from '@/components/ui/input';
+import { LinkIcon } from '@/components/ui/link-icon';
 import { Sheet } from '@/components/ui/sheet';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import type { OwnerLink } from '@/lib/profile/schema';
@@ -29,15 +19,6 @@ const MAX_LINKS = 12;
 
 const ADDABLE = ['instagram', 'facebook', 'tiktok', 'linkedin', 'website', 'custom'] as const;
 type AddableType = (typeof ADDABLE)[number];
-
-const ICONS: Record<string, typeof Instagram> = {
-  instagram: Instagram,
-  facebook: Facebook,
-  tiktok: Music2,
-  linkedin: Linkedin,
-  website: Globe,
-  custom: Link2,
-};
 
 type Props = {
   links: OwnerLink[];
@@ -142,7 +123,6 @@ function LinkCard({
   const t = useTranslations('account.links');
   const controls = useDragControls();
   const reduced = useReducedMotion();
-  const Icon = ICONS[link.type] ?? Link2;
   const urlInvalid = !isSafeProfileUrl(link.value);
 
   return (
@@ -170,9 +150,7 @@ function LinkCard({
         >
           <GripVertical className="size-5" strokeWidth={1.5} aria-hidden />
         </button>
-        <span className="border-border bg-bg text-accent grid size-10 shrink-0 place-items-center rounded-md border">
-          <Icon className="size-5" strokeWidth={1.75} aria-hidden />
-        </span>
+        <LinkIcon type={link.type} />
         <button
           type="button"
           onClick={onToggle}
@@ -296,7 +274,6 @@ function AddLinkSheet({ open, onClose, onAdd }: AddProps) {
     >
       <div role="radiogroup" aria-label={t('typeLabel')} className="grid grid-cols-3 gap-2">
         {ADDABLE.map((item) => {
-          const Icon = ICONS[item] ?? Link2;
           const selected = item === type;
           return (
             <button
@@ -315,11 +292,7 @@ function AddLinkSheet({ open, onClose, onAdd }: AddProps) {
                   : 'border-border bg-surface text-text-secondary',
               )}
             >
-              <Icon
-                className={cn('size-5', selected ? 'text-accent' : 'text-text-muted')}
-                strokeWidth={1.75}
-                aria-hidden
-              />
+              <LinkIcon type={item} size="sm" />
               {tType(item)}
             </button>
           );

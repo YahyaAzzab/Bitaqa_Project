@@ -93,6 +93,7 @@ export async function createProfile(raw: WizardFormValues): Promise<ActionResult
       currentOwnerId: null,
       email: values.ownerEmail,
       locale: values.defaultLang,
+      actorId: session.userId,
     });
     owner = provisioned.ok
       ? { link: provisioned.link, email: provisioned.email }

@@ -14,6 +14,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { publicSiteUrl } from '@/lib/site-url';
 import type { Json } from '@/lib/supabase/database.types';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 
 export type AccountLoginState = {
   error?: 'invalid' | 'no_profile' | 'rate_limited' | 'link' | 'generic';
@@ -119,6 +120,8 @@ export async function setOwnerPassword(password: string): Promise<AccountActionR
   if (error) {
     return { ok: false, error: error.code === 'same_password' ? 'password_same' : 'generic' };
   }
+  // A password the client chose stays theirs alone: the team copy is dropped.
+  await createServiceClient().from('owner_credentials').delete().eq('user_id', session.userId);
   revalidatePath('/fr/account');
   revalidatePath('/ar/account');
   return { ok: true, data: undefined };

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { inviteProfileOwner, revokeProfileOwner } from '@/features/profiles/owner-actions';
 import { takeOwnerLink } from '@/features/profiles/owner-link-handoff';
+import { OwnerPasswordPanel } from '@/features/profiles/owner-password-panel';
 import { useRouter } from '@/i18n/navigation';
 import { toWhatsAppHref } from '@/lib/profile/urls';
 
@@ -20,6 +21,8 @@ type Props = {
   businessName: string;
   /** Écran « Lien prêt » : reprend le lien créé avec le profil. */
   handoffSlug?: string;
+  /** Admin uniquement : gestion du mot de passe du commerçant. */
+  passwordAdmin?: { setAt: string | null } | null;
 };
 
 export function ProfileOwnerAccess({
@@ -29,6 +32,7 @@ export function ProfileOwnerAccess({
   clientPhone,
   businessName,
   handoffSlug,
+  passwordAdmin = null,
 }: Props) {
   const t = useTranslations('dashboard.owner');
   const { toast } = useToast();
@@ -179,6 +183,17 @@ export function ProfileOwnerAccess({
         </div>
       ) : null}
       {ownerEmail && error ? <p className="text-error mt-2 text-[13px]">{error}</p> : null}
+
+      {ownerEmail && passwordAdmin ? (
+        <OwnerPasswordPanel
+          profileId={profileId}
+          locale={locale}
+          email={ownerEmail}
+          clientPhone={clientPhone}
+          businessName={businessName}
+          setAt={passwordAdmin.setAt}
+        />
+      ) : null}
 
       <Dialog
         open={revokeOpen}

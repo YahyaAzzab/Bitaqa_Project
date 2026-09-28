@@ -14,6 +14,7 @@ Renseignez les clés Supabase dans `.env.local`, puis appliquez **dans l’ordre
 1. `supabase/migrations/20240921120000_init.sql`
 2. `supabase/migrations/20240922120000_rpcs.sql`
 3. `supabase/migrations/20260928120000_client_accounts.sql`
+4. `supabase/migrations/20260928150000_owner_credentials.sql`
 
 (SQL Editor Supabase ou CLI).
 
@@ -38,9 +39,11 @@ npm run dev
 
 Le vendeur ouvre l’accès depuis la fiche profil (carte « Espace client ») : il saisit l’e-mail du client et lui envoie le lien de connexion unique par WhatsApp. Le client ne peut jamais modifier le lien, le plan, le statut ni l’expiration (RPC `owner_update_profile`).
 
+Mots de passe : l’admin voit et change, depuis la fiche profil, le mot de passe attribué par l’équipe (chiffré AES-256-GCM dans `owner_credentials`, lisible uniquement par la clé service role). Dès que le commerçant choisit le sien, la copie est supprimée : il reste secret et l’admin peut seulement le réinitialiser.
+
 ## Variables d’environnement
 
-Voir `.env.example` : URL et clé anon publiques, `SUPABASE_SERVICE_ROLE_KEY` côté serveur uniquement, `NEXT_PUBLIC_SITE_URL`, et `SELLER_COOKIE_SECRET` (optionnel, signe le cookie de rôle vendeur ; à défaut la clé service role est utilisée).
+Voir `.env.example` : URL et clé anon publiques, `SUPABASE_SERVICE_ROLE_KEY` côté serveur uniquement, `NEXT_PUBLIC_SITE_URL`, et `SELLER_COOKIE_SECRET` (optionnel, signe le cookie de rôle vendeur ; à défaut la clé service role est utilisée) et `OWNER_PASSWORD_KEY` (optionnel, chiffre les mots de passe commerçants ; à ne jamais changer une fois en production, sinon les mots de passe enregistrés deviennent illisibles).
 
 ## Comptes vendeurs
 

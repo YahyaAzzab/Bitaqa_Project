@@ -304,7 +304,8 @@
       "ownerEmailHint": "Sert uniquement à se connecter. Vous lui enverrez le lien sur WhatsApp.",
       "ownerEmailRequired": "Indiquez l’e-mail du client, ou désactivez l’espace client.",
       "ownerEmailInvalid": "Adresse e-mail invalide.",
-      "ownerFailed": "Profil créé. L’espace client n’a pas pu être ouvert : réessayez depuis cet écran."
+      "ownerFailed": "Profil créé. L’espace client n’a pas pu être ouvert : réessayez depuis cet écran.",
+      "removeLink": "Retirer {name}"
     },
     "ready": {
       "title": "Lien prêt",
@@ -350,6 +351,35 @@
         "email_is_seller": "Cette adresse appartient à un vendeur Bitaqa.",
         "invalid": "Demande invalide.",
         "generic": "L’accès n’a pas pu être créé. Réessayez."
+      },
+      "password": {
+        "title": "Mot de passe",
+        "setOn": "Défini le {date}",
+        "show": "Afficher le mot de passe",
+        "hide": "Masquer le mot de passe",
+        "clientChosen": "Le commerçant a choisi son propre mot de passe : il reste secret. Vous pouvez en définir un nouveau.",
+        "unavailable": "Mot de passe illisible. Définissez-en un nouveau.",
+        "change": "Changer",
+        "send": "Envoyer",
+        "dialogTitle": "Nouveau mot de passe",
+        "dialogBody": "L’ancien mot de passe ne fonctionnera plus. Envoyez le nouveau au commerçant juste après.",
+        "label": "Mot de passe",
+        "generate": "Générer un autre mot de passe",
+        "confirm": "Enregistrer",
+        "saved": "Mot de passe mis à jour",
+        "whatsappMessage": "Bonjour, voici vos accès à l’espace Bitaqa de {name}.\nConnexion : {url}\nE-mail : {email}\nMot de passe : {password}",
+        "errors": {
+          "password_short": "8 caractères minimum.",
+          "password_weak": "Mot de passe trop simple. Générez-en un.",
+          "password_not_stored": "Mot de passe changé, mais la copie n’a pas pu être enregistrée. Définissez-le à nouveau.",
+          "forbidden": "Réservé à l’administrateur.",
+          "no_owner": "Ce profil n’a pas encore d’espace client.",
+          "rate_limited": "Trop de changements. Réessayez dans un moment.",
+          "not_found": "Profil introuvable.",
+          "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+          "invalid": "Demande invalide.",
+          "generic": "Le mot de passe n’a pas pu être changé. Réessayez."
+        }
       }
     }
   },

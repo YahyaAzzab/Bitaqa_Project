@@ -1,33 +1,10 @@
 'use client';
 
-import {
-  ArrowUpRight,
-  Facebook,
-  Globe,
-  Instagram,
-  Link2,
-  Linkedin,
-  Mail,
-  MapPin,
-  Phone,
-  Music2,
-} from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
+import { LinkIcon } from '@/components/ui/link-icon';
 import type { LinkType } from '@/lib/supabase/database.types';
 import { isSafeProfileUrl, toMailtoHref, toTelHref } from '@/lib/profile/urls';
 import { cn } from '@/lib/utils';
-
-const ICONS: Partial<Record<LinkType, typeof Globe>> = {
-  instagram: Instagram,
-  facebook: Facebook,
-  tiktok: Music2,
-  linkedin: Linkedin,
-  website: Globe,
-  maps: MapPin,
-  email: Mail,
-  phone: Phone,
-  whatsapp: Phone,
-  custom: Link2,
-};
 
 const HANDLE_TYPES: ReadonlySet<LinkType> = new Set(['instagram', 'tiktok', 'facebook']);
 
@@ -65,7 +42,6 @@ function linkDetail(type: LinkType, value: string): string | null {
 }
 
 export function ProfileLinkRow({ type, href, label }: Props) {
-  const Icon = ICONS[type] ?? Link2;
   const safe = resolveHref(type, href);
   if (!safe) return null;
   const detail = linkDetail(type, href);
@@ -81,9 +57,7 @@ export function ProfileLinkRow({ type, href, label }: Props) {
         'hover:bg-surface-raised/60 transition-colors duration-[150ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
       )}
     >
-      <span className="border-border bg-bg text-accent flex size-10 shrink-0 items-center justify-center rounded-md border">
-        <Icon className="size-[18px]" strokeWidth={1.75} aria-hidden />
-      </span>
+      <LinkIcon type={type} />
       <span className="min-w-0 flex-1">
         <span className="text-text block truncate text-[15px] font-medium">{label}</span>
         {detail ? (

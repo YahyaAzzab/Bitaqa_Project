@@ -40,6 +40,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      owner_credentials: {
+        Row: {
+          user_id: string;
+          password_cipher: string;
+          set_by: string | null;
+          set_at: string;
+        };
+        Insert: {
+          user_id: string;
+          password_cipher: string;
+          set_by?: string | null;
+          set_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          password_cipher?: string;
+          set_by?: string | null;
+          set_at?: string;
+        };
+        Relationships: [];
+      };
       plans: {
         Row: {
           code: string;

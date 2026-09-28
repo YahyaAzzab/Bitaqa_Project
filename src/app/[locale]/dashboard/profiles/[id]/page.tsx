@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ProfileActions } from '@/features/profiles/profile-actions';
-import { loadOwnerEmail } from '@/features/profiles/owner-email';
+import { loadOwnerAccount } from '@/features/profiles/owner-account';
 import { ProfileLogoEditor } from '@/features/profiles/profile-logo-editor';
 import { ProfileOwnerAccess } from '@/features/profiles/profile-owner-access';
 import type { Locale } from '@/i18n/config';
@@ -58,7 +58,7 @@ export default async function ProfileDetailPage({
   const { data: profile } = await q.maybeSingle();
   if (!profile) notFound();
 
-  const [salesRes, ordersRes, statsRes, ownerEmail] = await Promise.all([
+  const [salesRes, ordersRes, statsRes, ownerAccount] = await Promise.all([
     supabase
       .from('sales')
       .select('id, kind, amount_mad, collected_at, plan_code')
@@ -72,7 +72,7 @@ export default async function ProfileDetailPage({
       .order('ordered_at', { ascending: false })
       .limit(5),
     supabase.rpc('profile_scan_stats', { p_profile_id: profile.id }),
-    loadOwnerEmail(profile.owner_user_id),
+    loadOwnerAccount(profile.owner_user_id),
   ]);
 
   const sales = salesRes.data;
@@ -153,9 +153,12 @@ export default async function ProfileDetailPage({
       <ProfileOwnerAccess
         profileId={profile.id}
         locale={locale}
-        ownerEmail={ownerEmail}
+        ownerEmail={ownerAccount?.email ?? null}
         clientPhone={profile.phone}
         businessName={name}
+        passwordAdmin={
+          session.seller.role === 'admin' ? { setAt: ownerAccount?.passwordSetAt ?? null } : null
+        }
       />
 
       <ProfileActions
