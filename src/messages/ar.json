@@ -554,7 +554,9 @@
       "cancel": "إلغاء",
       "typeLabel": "نوع الرابط",
       "handleLabel": "اسم المستخدم أو رابط الحساب",
-      "titleOptional": "العنوان (اختياري)"
+      "titleOptional": "العنوان (اختياري)",
+      "whatsappLabel": "رقم أو رابط واتساب",
+      "whatsappHint": "رقم هاتف، أو رابط wa.me، أو دعوة لمجموعة."
     },
     "profile": {
       "identity": "الهوية",

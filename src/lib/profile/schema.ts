@@ -208,11 +208,12 @@ export type WizardLink = z.infer<typeof wizardLinkSchema>;
 
 export type WizardLinkType = Extract<
   LinkType,
-  'instagram' | 'facebook' | 'tiktok' | 'linkedin' | 'website' | 'custom'
+  'instagram' | 'facebook' | 'tiktok' | 'linkedin' | 'website' | 'custom' | 'whatsapp'
 >;
 
 export const WIZARD_LINK_TYPES: WizardLinkType[] = [
   'instagram',
+  'whatsapp',
   'facebook',
   'tiktok',
   'website',

@@ -554,7 +554,9 @@
       "cancel": "Annuler",
       "typeLabel": "Type de lien",
       "handleLabel": "Pseudo ou lien du profil",
-      "titleOptional": "Titre (facultatif)"
+      "titleOptional": "Titre (facultatif)",
+      "whatsappLabel": "Numéro ou lien WhatsApp",
+      "whatsappHint": "Un numéro, un lien wa.me ou l’invitation d’un groupe."
     },
     "profile": {
       "identity": "Identité",

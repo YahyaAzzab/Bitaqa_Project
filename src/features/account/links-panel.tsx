@@ -17,7 +17,15 @@ import { cn } from '@/lib/utils';
 
 const MAX_LINKS = 12;
 
-const ADDABLE = ['instagram', 'facebook', 'tiktok', 'linkedin', 'website', 'custom'] as const;
+const ADDABLE = [
+  'instagram',
+  'whatsapp',
+  'facebook',
+  'tiktok',
+  'linkedin',
+  'website',
+  'custom',
+] as const;
 type AddableType = (typeof ADDABLE)[number];
 
 type Props = {
@@ -259,6 +267,7 @@ function AddLinkSheet({ open, onClose, onAdd }: AddProps) {
   };
 
   const social = type === 'instagram' || type === 'tiktok' || type === 'facebook';
+  const whatsapp = type === 'whatsapp';
 
   return (
     <Sheet
@@ -307,10 +316,11 @@ function AddLinkSheet({ open, onClose, onAdd }: AddProps) {
       >
         <Input
           name="new-link"
-          label={social ? t('handleLabel') : t('url')}
-          placeholder={social ? '@pseudo' : 'https://'}
+          label={whatsapp ? t('whatsappLabel') : social ? t('handleLabel') : t('url')}
+          placeholder={whatsapp ? '06 12 34 56 78' : social ? '@pseudo' : 'https://'}
+          hint={whatsapp ? t('whatsappHint') : undefined}
           dir="ltr"
-          inputMode={social ? 'text' : 'url'}
+          inputMode={whatsapp ? 'tel' : social ? 'text' : 'url'}
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}

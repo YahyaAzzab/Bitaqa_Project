@@ -24,6 +24,20 @@ describe('buildSocialUrl', () => {
   it('conserve une URL https valide', () => {
     expect(buildSocialUrl('website', 'https://cuivrefil.ma')).toBe('https://cuivrefil.ma');
   });
+
+  it('transforme un numéro WhatsApp en lien wa.me', () => {
+    expect(buildSocialUrl('whatsapp', '06 12 34 56 78')).toBe('https://wa.me/212612345678');
+    expect(buildSocialUrl('whatsapp', '+33 6 12 34 56 78')).toBe('https://wa.me/33612345678');
+    expect(buildSocialUrl('whatsapp', 'chat.whatsapp.com/AbCdEf')).toBe(
+      'https://chat.whatsapp.com/AbCdEf',
+    );
+  });
+
+  it('refuse un lien WhatsApp qui ne mène pas à WhatsApp', () => {
+    expect(buildSocialUrl('whatsapp', 'https://evil.example/wa.me')).toBeNull();
+    expect(buildSocialUrl('whatsapp', '12345')).toBeNull();
+    expect(buildSocialUrl('whatsapp', 'javascript:alert(1)')).toBeNull();
+  });
 });
 
 describe('extractSocialHandle', () => {

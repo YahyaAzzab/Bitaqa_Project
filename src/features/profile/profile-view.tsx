@@ -73,14 +73,18 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
     data.links.find((l) => l.type === 'whatsapp')?.value ||
     (data.phone ? toWhatsAppHref(data.phone) : null);
 
+  const seen = new Set<string>();
   const links = expired
     ? []
-    : data.links.filter(
-        (l) =>
-          l.type !== 'phone' &&
-          l.type !== 'whatsapp' &&
-          (l.type === 'email' || isSafeProfileUrl(l.value)),
-      );
+    : data.links.filter((l) => {
+        if (l.type === 'phone') return false;
+        const value = l.type === 'whatsapp' ? toWhatsAppHref(l.value) : l.value;
+        if (l.type !== 'email' && !isSafeProfileUrl(value)) return false;
+        const key = `${l.type}:${value}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
 
   const actions: DockAction[] = [];
   if (data.phone) {

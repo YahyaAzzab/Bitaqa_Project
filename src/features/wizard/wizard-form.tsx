@@ -38,7 +38,8 @@ import {
 } from '@/lib/profile/schema';
 import { suggestSlugAlternatives, transliterateToSlug } from '@/lib/profile/slug';
 import { themeDefinition } from '@/lib/profile/themes';
-import { buildSocialUrl } from '@/lib/profile/urls';
+import { normalizeMoroccanPhone } from '@/lib/phone';
+import { buildSocialUrl, toWhatsAppHref } from '@/lib/profile/urls';
 import type { ProfilePreviewData } from '@/lib/profile/types';
 import { publicProfileUrl } from '@/lib/site-url';
 import { cn } from '@/lib/utils';
@@ -46,6 +47,13 @@ import { cn } from '@/lib/utils';
 const STEPS: WizardStep[] = ['business', 'contact', 'links', 'identity', 'plan'];
 
 function toPreview(values: WizardFormValues): ProfilePreviewData {
+  const waRaw = values.whatsappSame ? values.phone : values.whatsapp;
+  const wa = waRaw ? normalizeMoroccanPhone(waRaw) : null;
+  const system: ProfilePreviewData['links'] = [];
+  if (wa) system.push({ type: 'whatsapp', value: toWhatsAppHref(wa) });
+  if (values.email?.trim()) system.push({ type: 'email', value: values.email.trim() });
+  if (values.mapsUrl?.trim()) system.push({ type: 'maps', value: values.mapsUrl.trim() });
+
   return {
     businessNameFr: values.businessNameFr || '—',
     businessNameAr: values.businessNameAr || undefined,
@@ -58,12 +66,15 @@ function toPreview(values: WizardFormValues): ProfilePreviewData {
     phone: values.phone || undefined,
     email: values.email || undefined,
     hours: values.hoursEnabled ? values.hours : null,
-    links: values.links.map((l) => ({
-      type: l.type,
-      labelFr: l.labelFr,
-      labelAr: l.labelAr,
-      value: l.value,
-    })),
+    links: [
+      ...system,
+      ...values.links.map((l) => ({
+        type: l.type,
+        labelFr: l.labelFr,
+        labelAr: l.labelAr,
+        value: l.value,
+      })),
+    ],
   };
 }
 
@@ -488,7 +499,8 @@ export function WizardForm() {
                   label={t('addLink')}
                   className="text-[16px]"
                   dir="ltr"
-                  placeholder="@pseudo ou URL"
+                  inputMode={pendingLinkType === 'whatsapp' ? 'tel' : 'text'}
+                  placeholder={pendingLinkType === 'whatsapp' ? '06 12 34 56 78' : '@pseudo ou URL'}
                   value={linkInput}
                   onChange={(e) => setLinkInput(e.target.value)}
                   enterKeyHint="done"

@@ -69,6 +69,13 @@ export async function loadOwnerProfile(profileId: string) {
   if (!profile) return null;
 
   const rows = links ?? [];
+  // Only the first link of each contact type comes from the contact fields; extra WhatsApp numbers are free links.
+  const systemIds = new Set(
+    [...SYSTEM_LINK_TYPES].flatMap((type) => {
+      const first = rows.find((l) => l.type === type);
+      return first ? [first.id] : [];
+    }),
+  );
   const whatsapp = rows.find((l) => l.type === 'whatsapp')?.value;
   const phoneDigits = profile.phone ? digits(profile.phone) : '';
   const whatsappDigits = whatsapp ? digits(whatsapp) : '';
@@ -95,7 +102,7 @@ export async function loadOwnerProfile(profileId: string) {
     theme: resolveProfileTheme(profile.theme),
     accentColor: profile.accent_color,
     links: rows
-      .filter((l) => !SYSTEM_LINK_TYPES.has(l.type))
+      .filter((l) => !systemIds.has(l.id))
       .map((l) => ({
         key: l.id,
         type: l.type,

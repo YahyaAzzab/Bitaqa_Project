@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { normalizeMoroccanPhone } from '@/lib/phone';
 
 const ALLOWED = new Set(['https:', 'tel:', 'mailto:']);
 
@@ -34,13 +35,39 @@ export function toMailtoHref(email: string): string {
   return `mailto:${email.trim()}`;
 }
 
-/** Construit une URL https sûre depuis @pseudo ou URL partielle. */
+const WHATSAPP_HOSTS = new Set(['wa.me', 'api.whatsapp.com', 'chat.whatsapp.com', 'whatsapp.com']);
+
+/** Numéro (marocain ou international) ou lien wa.me / groupe / catalogue WhatsApp. */
+function buildWhatsAppUrl(raw: string): string | null {
+  if (/^https?:\/\//.test(raw) || /^(wa\.me|chat\.whatsapp\.com)\//.test(raw)) {
+    try {
+      const url = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
+      const host = url.hostname.replace(/^www\./, '');
+      if (!WHATSAPP_HOSTS.has(host)) return null;
+      url.protocol = 'https:';
+      return url.toString();
+    } catch {
+      return null;
+    }
+  }
+  const moroccan = normalizeMoroccanPhone(raw);
+  if (moroccan) return toWhatsAppHref(moroccan);
+  const digits = raw.replace(/\D/g, '').replace(/^00/, '');
+  if (raw.trim().startsWith('+') || raw.trim().startsWith('00')) {
+    if (digits.length >= 8 && digits.length <= 15) return `https://wa.me/${digits}`;
+  }
+  return null;
+}
+
+/** Construit une URL https sûre depuis @pseudo, numéro ou URL partielle. */
 export function buildSocialUrl(
-  type: 'instagram' | 'facebook' | 'tiktok' | 'linkedin' | 'website' | 'custom',
+  type: 'instagram' | 'facebook' | 'tiktok' | 'linkedin' | 'website' | 'custom' | 'whatsapp',
   input: string,
 ): string | null {
   const raw = input.trim();
   if (!raw) return null;
+
+  if (type === 'whatsapp') return buildWhatsAppUrl(raw);
 
   if (raw.startsWith('http://') || raw.startsWith('https://')) {
     return isSafeProfileUrl(raw) ? raw : null;

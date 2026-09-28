@@ -3,7 +3,8 @@
 import { ArrowUpRight } from 'lucide-react';
 import { LinkIcon } from '@/components/ui/link-icon';
 import type { LinkType } from '@/lib/supabase/database.types';
-import { isSafeProfileUrl, toMailtoHref, toTelHref } from '@/lib/profile/urls';
+import { formatNationalDisplay } from '@/lib/phone';
+import { isSafeProfileUrl, toMailtoHref, toTelHref, toWhatsAppHref } from '@/lib/profile/urls';
 import { cn } from '@/lib/utils';
 
 const HANDLE_TYPES: ReadonlySet<LinkType> = new Set(['instagram', 'tiktok', 'facebook']);
@@ -24,10 +25,26 @@ function resolveHref(type: LinkType, value: string): string | null {
   return isSafeProfileUrl(value) ? value : null;
 }
 
-/** Ce que le visiteur reconnaît : le @pseudo, le domaine ou l’adresse e-mail. */
+function whatsappDetail(value: string): string | null {
+  try {
+    const url = new URL(toWhatsAppHref(value));
+    const host = url.hostname.replace(/^www\./, '');
+    if (host !== 'wa.me') return host;
+    const digits = url.pathname.replace(/\D/g, '');
+    if (digits.startsWith('212') && digits.length === 12) {
+      return `+212 ${formatNationalDisplay(digits.slice(3))}`;
+    }
+    return digits ? `+${digits}` : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Ce que le visiteur reconnaît : le @pseudo, le numéro, le domaine ou l’adresse e-mail. */
 function linkDetail(type: LinkType, value: string): string | null {
   if (type === 'email') return value;
-  if (type === 'maps' || type === 'phone' || type === 'whatsapp') return null;
+  if (type === 'whatsapp') return whatsappDetail(value);
+  if (type === 'maps' || type === 'phone') return null;
   try {
     const url = new URL(value);
     const host = url.hostname.replace(/^www\./, '');
