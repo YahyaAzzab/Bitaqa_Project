@@ -424,6 +424,8 @@
     "notFoundTitle": "Profil introuvable",
     "notFoundBody": "Ce lien ne correspond à aucune carte active.",
     "notFoundCta": "Retour",
+    "suspendedTitle": "Compte suspendu",
+    "suspendedBody": "Cette carte est désactivée pour le moment. Elle redeviendra accessible dès la réactivation du compte.",
     "day": {
       "mon": "Lundi",
       "tue": "Mardi",

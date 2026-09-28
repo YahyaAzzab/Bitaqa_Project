@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ProfileView } from '@/features/profile/profile-view';
+import { SuspendedProfile } from '@/features/profile/suspended-profile';
 import type { Locale } from '@/i18n/config';
-import { getCachedPublicProfile } from '@/lib/profile/cache';
+import { getCachedPublicProfileState } from '@/lib/profile/cache';
 import { publicProfileUrl, publicSiteUrl } from '@/lib/site-url';
 import { resolveProfileTheme } from '@/lib/profile/theme';
 import type { ProfilePreviewData, PublicProfile } from '@/lib/profile/types';
@@ -37,12 +38,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Bitaqa' };
   }
 
-  const profile = await getCachedPublicProfile(slug);
-  if (!profile) {
+  const state = await getCachedPublicProfileState(slug);
+  if (state.kind !== 'live') {
     const t = await getTranslations({ locale, namespace: 'profile' });
-    return { title: t('notFoundTitle') };
+    return {
+      title: `${t(state.kind === 'suspended' ? 'suspendedTitle' : 'notFoundTitle')} · Bitaqa`,
+      robots: { index: false, follow: false },
+    };
   }
 
+  const { profile } = state;
   const name =
     locale === 'ar'
       ? profile.business_name_ar || profile.business_name_fr
@@ -72,10 +77,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       type: 'profile',
       images: [{ url: `${site}/api/og/${slug}`, width: 1200, height: 630 }],
     },
-    robots:
-      profile.status === 'suspended'
-        ? { index: false, follow: false }
-        : { index: true, follow: true },
+    robots: { index: true, follow: true },
   };
 }
 
@@ -117,13 +119,15 @@ export default async function PublicProfilePage({ params }: PageProps) {
     notFound();
   }
 
-  const profile = await getCachedPublicProfile(slug);
-  if (!profile || profile.status === 'suspended') {
-    notFound();
+  const state = await getCachedPublicProfileState(slug);
+  if (state.kind === 'missing') notFound();
+  if (state.kind === 'suspended') {
+    const name = locale === 'ar' ? state.nameAr || state.nameFr : state.nameFr;
+    return <SuspendedProfile locale={locale} name={name} />;
   }
 
   const profileUrl = publicProfileUrl(locale, slug);
-  const data = toPreview(profile);
+  const data = toPreview(state.profile);
 
   return <ProfileView data={data} profileUrl={profileUrl} locale={locale} />;
 }

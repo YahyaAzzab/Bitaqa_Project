@@ -103,12 +103,14 @@ export async function suspendProfile(profileId: string): Promise<ProfileActionRe
 
   if (!profile) return { ok: false, error: 'not_found' };
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from('profiles')
     .update({ status: 'suspended' })
-    .eq('id', profile.id);
+    .eq('id', profile.id)
+    .select('id');
 
-  if (error) return { ok: false, error: 'generic' };
+  // RLS turns a refused update into "0 rows, no error": never report success on that.
+  if (error || !updated?.length) return { ok: false, error: 'generic' };
 
   await revalidateProfile(profile.slug, profile.id);
   return { ok: true };
@@ -133,8 +135,12 @@ export async function reactivateProfile(profileId: string): Promise<ProfileActio
 
   // Suspension never touched the paid period: resume it as it stands.
   const status = new Date(profile.expires_at).getTime() > Date.now() ? 'active' : 'expired';
-  const { error } = await supabase.from('profiles').update({ status }).eq('id', profile.id);
-  if (error) return { ok: false, error: 'generic' };
+  const { data: updated, error } = await supabase
+    .from('profiles')
+    .update({ status })
+    .eq('id', profile.id)
+    .select('id');
+  if (error || !updated?.length) return { ok: false, error: 'generic' };
 
   await revalidateProfile(profile.slug, profile.id);
   return { ok: true };
