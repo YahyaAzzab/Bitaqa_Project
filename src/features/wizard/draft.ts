@@ -1,5 +1,6 @@
 import { del, get, set } from 'idb-keyval';
 import { wizardDefaults, type WizardFormValues } from '@/lib/profile/schema';
+import { resolveProfileTheme } from '@/lib/profile/theme';
 
 const DRAFT_KEY = 'bitaqa:profile-wizard-draft:v1';
 
@@ -16,12 +17,17 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 function mergeDraft(raw: unknown): WizardDraft | null {
   if (!isRecord(raw) || !isRecord(raw.values)) return null;
   const step = typeof raw.step === 'number' && raw.step >= 0 && raw.step <= 4 ? raw.step : 0;
+  const stored = raw.values as Partial<WizardFormValues>;
   const values: WizardFormValues = {
     ...wizardDefaults,
-    ...(raw.values as Partial<WizardFormValues>),
+    ...stored,
     links: Array.isArray(raw.values.links)
       ? (raw.values.links as WizardFormValues['links'])
       : [],
+    hours: isRecord(raw.values.hours)
+      ? { ...wizardDefaults.hours, ...(raw.values.hours as Partial<WizardFormValues['hours']>) }
+      : wizardDefaults.hours,
+    theme: resolveProfileTheme(stored.theme),
     cashConfirmed: true,
   };
   return {

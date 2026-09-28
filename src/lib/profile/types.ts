@@ -1,5 +1,6 @@
 import type { LinkType, Profile, ProfileLink } from '@/lib/supabase/database.types';
 import type { WeeklyHours } from './hours';
+import type { ThemeName } from './themes';
 
 export type PublicProfileLink = Pick<
   ProfileLink,
@@ -38,7 +39,7 @@ export type ProfilePreviewData = {
   addressAr?: string;
   logoUrl?: string | null;
   accentColor: string;
-  theme: 'noir' | 'ivoire';
+  theme: ThemeName;
   phone?: string;
   email?: string;
   links: Array<{

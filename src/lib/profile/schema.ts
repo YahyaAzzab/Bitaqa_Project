@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { normalizeMoroccanPhone } from '@/lib/phone';
 import { isReservedSlug, isValidSlug } from '@/lib/profile/slug';
+import { THEME_IDS } from '@/lib/profile/themes';
 import { isSafeProfileUrl } from '@/lib/profile/urls';
 import type { LinkType } from '@/lib/supabase/database.types';
 
@@ -30,6 +31,43 @@ export const wizardLinkSchema = z.object({
   labelAr: z.string().trim().max(60).optional(),
   value: z.string().trim().min(1).max(500),
 });
+
+const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+const daySlotsSchema = z.array(z.tuple([z.string().max(5), z.string().max(5)])).max(2);
+
+/** Créneaux au format HH:MM, fin après début, sans chevauchement entre deux créneaux. */
+export function areDaySlotsValid(slots: readonly (readonly [string, string])[]): boolean {
+  return slots.every(
+    ([start, end], index) =>
+      TIME_PATTERN.test(start) &&
+      TIME_PATTERN.test(end) &&
+      start < end &&
+      (index === 0 || slots[index - 1]![1] <= start),
+  );
+}
+
+export const weeklyHoursSchema = z.object({
+  mon: daySlotsSchema,
+  tue: daySlotsSchema,
+  wed: daySlotsSchema,
+  thu: daySlotsSchema,
+  fri: daySlotsSchema,
+  sat: daySlotsSchema,
+  sun: daySlotsSchema,
+});
+
+export type WeeklyHoursInput = z.infer<typeof weeklyHoursSchema>;
+
+export const DEFAULT_WEEKLY_HOURS: WeeklyHoursInput = {
+  mon: [['09:00', '19:00']],
+  tue: [['09:00', '19:00']],
+  wed: [['09:00', '19:00']],
+  thu: [['09:00', '19:00']],
+  fri: [['09:00', '19:00']],
+  sat: [['09:00', '19:00']],
+  sun: [],
+};
 
 export const wizardFormObjectSchema = z.object({
   businessNameFr: z.string().trim().min(2).max(80),
@@ -64,7 +102,9 @@ export const wizardFormObjectSchema = z.object({
     .refine((v) => !v || isSafeProfileUrl(v), { message: 'url_unsafe' }),
   links: z.array(wizardLinkSchema).max(12).default([]),
   logoUrl: z.string().url().nullable().optional(),
-  theme: z.enum(['noir', 'ivoire']),
+  hoursEnabled: z.boolean().default(false),
+  hours: weeklyHoursSchema.default(DEFAULT_WEEKLY_HOURS),
+  theme: z.enum(THEME_IDS),
   accentColor: z
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/, { message: 'accent_invalid' })
@@ -77,6 +117,13 @@ export const wizardFormObjectSchema = z.object({
 });
 
 export const wizardFormSchema = wizardFormObjectSchema.superRefine((data, ctx) => {
+  if (data.hoursEnabled) {
+    for (const [day, slots] of Object.entries(data.hours)) {
+      if (!areDaySlotsValid(slots)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'hours_invalid', path: ['hours', day] });
+      }
+    }
+  }
   if (!data.whatsappSame) {
     const wa = data.whatsapp?.trim();
     if (!wa || normalizeMoroccanPhone(wa) === null) {
@@ -117,6 +164,8 @@ export const wizardDefaults: WizardFormValues = {
   email: '',
   addressFr: '',
   mapsUrl: '',
+  hoursEnabled: false,
+  hours: DEFAULT_WEEKLY_HOURS,
   links: [],
   logoUrl: null,
   theme: 'noir',
@@ -144,6 +193,8 @@ export const stepSchemas = {
     email: true,
     addressFr: true,
     mapsUrl: true,
+    hoursEnabled: true,
+    hours: true,
   }),
   links: wizardFormObjectSchema.pick({ links: true }),
   identity: wizardFormObjectSchema.pick({

@@ -12,6 +12,7 @@ import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import type { ProfilePreviewData } from '@/lib/profile/types';
 import { resolveProfileTheme } from '@/lib/profile/theme';
 import { toTelHref, toWhatsAppHref, isSafeProfileUrl } from '@/lib/profile/urls';
+import { accentStyle } from '@/lib/color';
 import { cn } from '@/lib/utils';
 import { ProfileHours } from './profile-hours';
 import { ProfileLinkRow } from './profile-link-row';
@@ -56,13 +57,17 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
   const expired = Boolean(data.expired);
   const theme = data.theme ?? resolveProfileTheme('noir');
 
+  // Sheets and toasts portal to <body>, so the live page mirrors its palette on <html>.
+  // The dashboard preview must not repaint the seller's app.
   useEffect(() => {
+    if (preview) return;
     setTheme(theme);
     setAccent(data.accentColor || null);
     return () => {
+      setTheme('noir');
       setAccent(null);
     };
-  }, [theme, data.accentColor, setTheme, setAccent]);
+  }, [preview, theme, data.accentColor, setTheme, setAccent]);
 
   const whatsappLink =
     data.links.find((l) => l.type === 'whatsapp')?.value ||
@@ -94,7 +99,11 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
   return (
     <LazyMotion features={domAnimation}>
       {!preview && data.slug ? <ScanBeacon slug={data.slug} /> : null}
-      <div className={cn('relative isolate', !preview && 'min-h-dvh')}>
+      <div
+        data-theme={theme}
+        style={accentStyle(data.accentColor)}
+        className={cn('bg-bg text-text relative isolate', !preview && 'min-h-dvh')}
+      >
         <div aria-hidden className="profile-halo pointer-events-none absolute inset-x-0 top-0 -z-10 h-80" />
 
         <div

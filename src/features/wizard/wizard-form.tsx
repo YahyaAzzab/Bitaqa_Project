@@ -29,7 +29,9 @@ import { useToast } from '@/components/ui/toast';
 import { ProfileView } from '@/features/profile/profile-view';
 import { clearWizardDraft, loadWizardDraft, saveWizardDraft } from '@/features/wizard/draft';
 import { checkSlugAvailable, createProfile } from '@/features/wizard/actions';
+import { HoursEditor } from '@/features/wizard/hours-editor';
 import { LogoPicker } from '@/features/wizard/logo-picker';
+import { AccentChoices, ThemePicker } from '@/features/wizard/theme-picker';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useKeyboardOffset } from '@/hooks/use-keyboard-offset';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
@@ -44,6 +46,7 @@ import {
   type WizardStep,
 } from '@/lib/profile/schema';
 import { suggestSlugAlternatives, transliterateToSlug } from '@/lib/profile/slug';
+import { themeDefinition } from '@/lib/profile/themes';
 import { buildSocialUrl } from '@/lib/profile/urls';
 import type { ProfilePreviewData } from '@/lib/profile/types';
 import { publicProfileUrl } from '@/lib/site-url';
@@ -72,6 +75,7 @@ function toPreview(values: WizardFormValues): ProfilePreviewData {
     theme: values.theme,
     phone: values.phone || undefined,
     email: values.email || undefined,
+    hours: values.hoursEnabled ? values.hours : null,
     links: values.links.map((l) => ({
       type: l.type,
       labelFr: l.labelFr,
@@ -131,6 +135,10 @@ export function WizardForm() {
   const slug = useWatch({ control, name: 'slug' });
   const planCode = useWatch({ control, name: 'planCode' });
   const whatsappSame = useWatch({ control, name: 'whatsappSame' });
+  const hoursEnabled = useWatch({ control, name: 'hoursEnabled' });
+  const accentColor = useWatch({ control, name: 'accentColor' });
+  const theme = useWatch({ control, name: 'theme' });
+  const [logoAccent, setLogoAccent] = useState<string | null>(null);
 
   useEffect(() => {
     if (slugTouched.current) return;
@@ -165,7 +173,16 @@ export function WizardForm() {
   const validateStep = useCallback(async () => {
     const fieldsByStep: Record<WizardStep, (keyof WizardFormValues)[]> = {
       business: ['businessNameFr', 'slug'],
-      contact: ['phone', 'whatsappSame', 'whatsapp', 'email', 'addressFr', 'mapsUrl'],
+      contact: [
+        'phone',
+        'whatsappSame',
+        'whatsapp',
+        'email',
+        'addressFr',
+        'mapsUrl',
+        'hoursEnabled',
+        'hours',
+      ],
       links: ['links'],
       identity: ['theme', 'accentColor'],
       plan: ['planCode', 'amountMad', 'cashConfirmed', 'designNotes'],
@@ -395,6 +412,30 @@ export function WizardForm() {
                 inputMode="url"
                 {...register('mapsUrl')}
               />
+              <div className="border-border bg-surface rounded-lg border px-4 py-3">
+                <Controller
+                  control={control}
+                  name="hoursEnabled"
+                  render={({ field }) => (
+                    <Switch
+                      id="hours-enabled"
+                      label={t('hours')}
+                      description={t('hoursHint')}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+              {hoursEnabled ? (
+                <Controller
+                  control={control}
+                  name="hours"
+                  render={({ field }) => (
+                    <HoursEditor value={field.value} onChange={field.onChange} />
+                  )}
+                />
+              ) : null}
             </>
           ) : null}
 
@@ -464,32 +505,34 @@ export function WizardForm() {
                 businessName={watched.businessNameFr || 'B'}
                 onUploaded={(url, accent) => {
                   setValue('logoUrl', url, { shouldDirty: true });
-                  if (accent) setValue('accentColor', accent, { shouldDirty: true });
+                  if (accent) {
+                    setLogoAccent(accent);
+                    setValue('accentColor', accent, { shouldDirty: true });
+                  }
                 }}
               />
               <div>
-                <p className="text-text-secondary mb-2 text-[13px] font-medium">{t('theme')}</p>
-                <Controller
-                  control={control}
-                  name="theme"
-                  render={({ field }) => (
-                    <SegmentedControl
-                      ariaLabel={t('theme')}
-                      value={field.value}
-                      onChange={field.onChange}
-                      segments={[
-                        { value: 'noir', label: 'Noir' },
-                        { value: 'ivoire', label: 'Ivoire' },
-                      ]}
-                    />
-                  )}
+                <p className="text-text-secondary text-[13px] font-medium">{t('theme')}</p>
+                <p className="text-text-muted mt-0.5 mb-3 text-[12px]">{t('themeHint')}</p>
+                <ThemePicker
+                  value={theme}
+                  onChange={(next) => {
+                    setValue('theme', next.id, { shouldDirty: true });
+                    setValue('accentColor', next.accent, { shouldDirty: true, shouldValidate: true });
+                  }}
                 />
               </div>
-              <Input
+              <AccentChoices
                 label={t('accent')}
-                type="color"
-                className="h-12 cursor-pointer p-1 text-[16px]"
-                {...register('accentColor')}
+                customLabel={t('accentCustom')}
+                value={accentColor}
+                swatches={[
+                  { hex: themeDefinition(theme).accent, label: t('accentTheme') },
+                  ...(logoAccent ? [{ hex: logoAccent, label: t('accentLogo') }] : []),
+                ]}
+                onChange={(hex) =>
+                  setValue('accentColor', hex, { shouldDirty: true, shouldValidate: true })
+                }
               />
             </>
           ) : null}

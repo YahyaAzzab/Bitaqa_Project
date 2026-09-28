@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { getSellerSession } from '@/lib/auth/session';
 import { env } from '@/lib/env';
 import { themeToDb } from '@/lib/profile/theme';
+import { THEME_IDS } from '@/lib/profile/themes';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/database.types';
 
@@ -30,7 +31,7 @@ const updateSchema = z.object({
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/)
     .optional(),
-  theme: z.enum(['noir', 'ivoire']).optional(),
+  theme: z.enum(THEME_IDS).optional(),
   logoUrl: z
     .string()
     .url()

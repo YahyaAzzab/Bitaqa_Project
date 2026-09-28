@@ -128,7 +128,7 @@ export async function createProfile(
     p_theme: themeToDb(values.theme),
     p_phone: phone,
     p_email: emptyToNull(values.email),
-    p_hours: null,
+    p_hours: values.hoursEnabled ? (values.hours as Json) : null,
     p_plan_code: values.planCode,
     p_amount_mad: values.amountMad,
     p_design_notes: emptyToNull(values.designNotes),
