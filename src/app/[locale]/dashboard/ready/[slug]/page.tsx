@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
+import { loadOwnerEmail } from '@/features/profiles/owner-email';
+import { ProfileOwnerAccess } from '@/features/profiles/profile-owner-access';
 import { ReadyScreen } from '@/features/wizard/ready-screen';
 import type { Locale } from '@/i18n/config';
 import { getSellerSession } from '@/lib/auth/session';
@@ -22,7 +24,7 @@ export default async function ReadyPage({
   const supabase = await createServerSupabaseClient();
   let profileQuery = supabase
     .from('profiles')
-    .select('id, slug, business_name_fr, business_name_ar, phone')
+    .select('id, slug, business_name_fr, business_name_ar, phone, owner_user_id')
     .eq('slug', slug);
 
   if (session.seller.role !== 'admin') {
@@ -37,6 +39,7 @@ export default async function ReadyPage({
     locale === 'ar'
       ? profile.business_name_ar || profile.business_name_fr
       : profile.business_name_fr;
+  const ownerEmail = await loadOwnerEmail(profile.owner_user_id);
 
   return (
     <ReadyScreen
@@ -44,6 +47,16 @@ export default async function ReadyPage({
       businessName={name}
       phone={profile.phone}
       profileUrl={profileUrl}
+      ownerAccess={
+        <ProfileOwnerAccess
+          profileId={profile.id}
+          locale={locale}
+          ownerEmail={ownerEmail}
+          clientPhone={profile.phone}
+          businessName={name}
+          handoffSlug={profile.slug}
+        />
+      }
     />
   );
 }

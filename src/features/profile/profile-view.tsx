@@ -5,7 +5,6 @@ import { ArrowRight, BookmarkPlus, MapPin, MessageCircle, Nfc, Phone } from 'luc
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, type ComponentType } from 'react';
 import { Link } from '@/i18n/navigation';
-import { Avatar } from '@/components/ui/avatar';
 import { useTheme } from '@/components/providers';
 import { fadeScale, fadeUp, staggerContainer, transitionBase, variantsFor } from '@/lib/motion';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
@@ -16,6 +15,7 @@ import { accentStyle } from '@/lib/color';
 import { cn } from '@/lib/utils';
 import { ProfileHours } from './profile-hours';
 import { ProfileLinkRow } from './profile-link-row';
+import { ProfileLogo } from './profile-logo';
 import { ProfileShareControls } from './profile-share';
 import { ScanBeacon } from './scan-beacon';
 
@@ -160,12 +160,13 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
               variants={variantsFor(reduced, fadeScale)}
               className="border-border bg-surface/60 rounded-[16px] border p-1"
             >
-              <Avatar
+              <ProfileLogo
                 name={name || 'B'}
                 src={data.logoUrl}
-                size={96}
                 priority={!preview}
-                className="rounded-lg border-0"
+                zoomable={!preview}
+                zoomLabel={t('zoomLogo')}
+                closeLabel={t('close')}
               />
             </m.div>
             <m.h1

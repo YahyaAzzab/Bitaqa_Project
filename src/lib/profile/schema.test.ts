@@ -41,6 +41,7 @@ describe('wizardFormSchema hours', () => {
     slug: 'atelier-nour',
     phone: '0612345678',
     cashConfirmed: true,
+    ownerEmail: 'nour@exemple.ma',
   };
   const broken = { ...wizardDefaults.hours, mon: [['19:00', '09:00']] as [string, string][] };
 
@@ -54,6 +55,28 @@ describe('wizardFormSchema hours', () => {
     const result = wizardFormSchema.safeParse({ ...base, hoursEnabled: true, hours: broken });
     expect(result.success).toBe(false);
     expect(result.error?.issues.some((issue) => issue.path.join('.') === 'hours.mon')).toBe(true);
+  });
+});
+
+describe('wizardFormSchema client access', () => {
+  const base = {
+    ...wizardDefaults,
+    businessNameFr: 'Atelier Nour',
+    slug: 'atelier-nour',
+    phone: '0612345678',
+    cashConfirmed: true,
+  };
+
+  it('exige l’e-mail du client quand l’espace client est activé', () => {
+    const result = wizardFormSchema.safeParse({ ...base, clientAccess: true, ownerEmail: '' });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((issue) => issue.path.join('.') === 'ownerEmail')).toBe(true);
+  });
+
+  it('normalise l’e-mail et accepte un profil sans espace client', () => {
+    const parsed = wizardFormSchema.parse({ ...base, ownerEmail: '  Nour@Exemple.MA ' });
+    expect(parsed.ownerEmail).toBe('nour@exemple.ma');
+    expect(wizardFormSchema.safeParse({ ...base, clientAccess: false }).success).toBe(true);
   });
 });
 

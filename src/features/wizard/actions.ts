@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
+import { provisionProfileOwner } from '@/features/profiles/owner-provision';
 import { getSellerSession } from '@/lib/auth/session';
 import { normalizeMoroccanPhone } from '@/lib/phone';
 import { isReservedSlug, isValidSlug } from '@/lib/profile/slug';
@@ -34,9 +35,13 @@ export async function checkSlugAvailable(
   return { ok: true, data: { available: !data } };
 }
 
-export async function createProfile(
-  raw: WizardFormValues,
-): Promise<ActionResult<{ id: string; slug: string }>> {
+export type CreatedProfile = {
+  id: string;
+  slug: string;
+  owner: { link: string; email: string } | { error: string } | null;
+};
+
+export async function createProfile(raw: WizardFormValues): Promise<ActionResult<CreatedProfile>> {
   const session = await getSellerSession();
   if (!session) return { ok: false, error: 'unauthorized' };
 
@@ -79,6 +84,21 @@ export async function createProfile(
 
   if (!profileId) return { ok: false, error: 'generic' };
 
+  // The sale is already recorded: an account failure must not undo it, the seller retries from the ready screen.
+  let owner: CreatedProfile['owner'] = null;
+  if (values.clientAccess && values.ownerEmail) {
+    const provisioned = await provisionProfileOwner({
+      supabase,
+      profileId,
+      currentOwnerId: null,
+      email: values.ownerEmail,
+      locale: values.defaultLang,
+    });
+    owner = provisioned.ok
+      ? { link: provisioned.link, email: provisioned.email }
+      : { error: provisioned.error };
+  }
+
   revalidateTag(`profile:${values.slug}`);
   revalidatePath(`/fr/${values.slug}`);
   revalidatePath(`/ar/${values.slug}`);
@@ -87,7 +107,7 @@ export async function createProfile(
   revalidatePath('/fr/dashboard/profiles');
   revalidatePath('/ar/dashboard/profiles');
 
-  return { ok: true, data: { id: profileId, slug: values.slug } };
+  return { ok: true, data: { id: profileId, slug: values.slug, owner } };
 }
 
 export async function uploadLogo(formData: FormData): Promise<ActionResult<{ url: string }>> {

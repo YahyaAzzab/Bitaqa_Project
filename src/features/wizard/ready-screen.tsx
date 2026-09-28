@@ -3,7 +3,7 @@
 import { Check, Copy, QrCode } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import QRCode from 'qrcode';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet } from '@/components/ui/sheet';
 import { useToast } from '@/components/ui/toast';
@@ -15,11 +15,12 @@ type Props = {
   businessName: string;
   phone: string | null;
   profileUrl: string;
+  ownerAccess: ReactNode;
 };
 
 const NFC_KEYS = ['nfc1', 'nfc2', 'nfc3', 'nfc4'] as const;
 
-export function ReadyScreen({ slug, businessName, phone, profileUrl }: Props) {
+export function ReadyScreen({ slug, businessName, phone, profileUrl, ownerAccess }: Props) {
   const t = useTranslations('dashboard.ready');
   const tProfile = useTranslations('profile');
   const locale = useLocale() as 'fr' | 'ar';
@@ -130,6 +131,8 @@ export function ReadyScreen({ slug, businessName, phone, profileUrl }: Props) {
         </ul>
         <p className="text-text-muted mt-3 text-[13px] leading-relaxed">{t('scanReminder')}</p>
       </section>
+
+      {ownerAccess}
 
       <div className="grid gap-2">
         <Button variant="secondary" onClick={() => window.open(`/${locale}/${slug}`, '_blank')}>

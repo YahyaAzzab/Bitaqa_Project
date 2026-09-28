@@ -117,6 +117,15 @@ export const wizardFormObjectSchema = z.object({
   cashConfirmed: z.boolean().refine((v) => v === true, { message: 'cash_required' }),
   designNotes: z.string().trim().max(500).optional().or(z.literal('')),
   defaultLang: z.enum(['fr', 'ar']).default('fr'),
+  clientAccess: z.boolean().default(true),
+  ownerEmail: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(200)
+    .email({ message: 'email_invalid' })
+    .optional()
+    .or(z.literal('')),
 });
 
 type ContactAndHours = {
@@ -150,7 +159,16 @@ function refineContactAndHours(data: ContactAndHours, ctx: z.RefinementCtx) {
   }
 }
 
-export const wizardFormSchema = wizardFormObjectSchema.superRefine(refineContactAndHours);
+export const wizardFormSchema = wizardFormObjectSchema.superRefine((data, ctx) => {
+  refineContactAndHours(data, ctx);
+  if (data.clientAccess && !data.ownerEmail) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'owner_email_required',
+      path: ['ownerEmail'],
+    });
+  }
+});
 
 export const ownerLinkSchema = linkObjectSchema
   .extend({ key: z.string().min(1).max(64) })
@@ -224,6 +242,8 @@ export const wizardDefaults: WizardFormValues = {
   cashConfirmed: false,
   designNotes: '',
   defaultLang: 'fr',
+  clientAccess: true,
+  ownerEmail: '',
 };
 
 /** Schéma partiel par étape pour valider avant d’avancer. */
@@ -244,6 +264,8 @@ export const stepSchemas = {
     mapsUrl: true,
     hoursEnabled: true,
     hours: true,
+    clientAccess: true,
+    ownerEmail: true,
   }),
   links: wizardFormObjectSchema.pick({ links: true }),
   identity: wizardFormObjectSchema.pick({

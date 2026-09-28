@@ -2,11 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { provisionProfileOwner } from '@/features/profiles/owner-provision';
 import { getSellerSession } from '@/lib/auth/session';
 import { rateLimit } from '@/lib/rate-limit';
-import { publicSiteUrl } from '@/lib/site-url';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createServiceClient } from '@/lib/supabase/service';
 
 export type OwnerActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -37,10 +36,6 @@ function revalidateDetail(profileId: string) {
   revalidatePath(`/ar/dashboard/profiles/${profileId}`);
 }
 
-/**
- * Crée (ou retrouve) le compte du commerçant et renvoie un lien de connexion
- * à usage unique, envoyé par le vendeur sur WhatsApp : aucun e-mail requis.
- */
 export async function inviteProfileOwner(
   raw: z.input<typeof inviteSchema>,
 ): Promise<OwnerActionResult<{ link: string; email: string }>> {
@@ -56,39 +51,17 @@ export async function inviteProfileOwner(
     return { ok: false, error: 'rate_limited' };
   }
 
-  const admin = createServiceClient();
-  const created = await admin.auth.admin.createUser({ email, email_confirm: true });
-  if (created.error && created.error.status !== 422) {
-    return { ok: false, error: 'generic' };
-  }
-
-  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-    type: 'magiclink',
+  const result = await provisionProfileOwner({
+    supabase,
+    profileId: profile.id,
+    currentOwnerId: profile.owner_user_id,
     email,
+    locale,
   });
-  if (linkError || !linkData.user || !linkData.properties.hashed_token) {
-    return { ok: false, error: 'generic' };
-  }
-
-  const ownerId = linkData.user.id;
-  const { data: seller } = await admin.from('sellers').select('id').eq('id', ownerId).maybeSingle();
-  if (seller) return { ok: false, error: 'email_is_seller' };
-
-  if (profile.owner_user_id !== ownerId) {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ owner_user_id: ownerId })
-      .eq('id', profile.id);
-    if (error) return { ok: false, error: 'generic' };
-  }
-
-  const url = new URL('/api/auth/confirm', publicSiteUrl());
-  url.searchParams.set('token_hash', linkData.properties.hashed_token);
-  url.searchParams.set('type', 'magiclink');
-  url.searchParams.set('next', `/${locale}/account`);
+  if (!result.ok) return { ok: false, error: result.error };
 
   revalidateDetail(profile.id);
-  return { ok: true, data: { link: url.toString(), email } };
+  return { ok: true, data: { link: result.link, email } };
 }
 
 export async function revokeProfileOwner(profileId: string): Promise<OwnerActionResult> {

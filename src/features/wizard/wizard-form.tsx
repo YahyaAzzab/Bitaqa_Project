@@ -27,6 +27,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { ProfileView } from '@/features/profile/profile-view';
+import { stashOwnerLink } from '@/features/profiles/owner-link-handoff';
 import { clearWizardDraft, loadWizardDraft, saveWizardDraft } from '@/features/wizard/draft';
 import { checkSlugAvailable, createProfile } from '@/features/wizard/actions';
 import { HoursEditor } from '@/features/wizard/hours-editor';
@@ -101,6 +102,7 @@ export function WizardForm() {
   const [linkInput, setLinkInput] = useState('');
   const [submitting, startSubmit] = useTransition();
   const slugTouched = useRef(false);
+  const ownerEmailTouched = useRef(false);
   const draftLoaded = useRef(false);
 
   const form = useForm<WizardFormValues>({
@@ -118,6 +120,8 @@ export function WizardForm() {
     draftLoaded.current = true;
     void loadWizardDraft().then((draft) => {
       if (!draft) return;
+      ownerEmailTouched.current =
+        Boolean(draft.values.ownerEmail) && draft.values.ownerEmail !== draft.values.email;
       form.reset(draft.values);
       setStep(draft.step);
       toast({ title: t('draftRestored'), variant: 'success' });
@@ -138,7 +142,14 @@ export function WizardForm() {
   const hoursEnabled = useWatch({ control, name: 'hoursEnabled' });
   const accentColor = useWatch({ control, name: 'accentColor' });
   const theme = useWatch({ control, name: 'theme' });
+  const email = useWatch({ control, name: 'email' });
+  const clientAccess = useWatch({ control, name: 'clientAccess' });
   const [logoAccent, setLogoAccent] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (ownerEmailTouched.current) return;
+    setValue('ownerEmail', email ?? '');
+  }, [email, setValue]);
 
   useEffect(() => {
     if (slugTouched.current) return;
@@ -182,6 +193,8 @@ export function WizardForm() {
         'mapsUrl',
         'hoursEnabled',
         'hours',
+        'clientAccess',
+        'ownerEmail',
       ],
       links: ['links'],
       identity: ['theme', 'accentColor'],
@@ -232,6 +245,9 @@ export function WizardForm() {
         return;
       }
       await clearWizardDraft();
+      const { owner } = res.data;
+      if (owner && 'link' in owner) stashOwnerLink(res.data.slug, owner.link);
+      else if (owner) toast({ title: t('ownerFailed'), variant: 'error' });
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
         navigator.vibrate([10, 40, 10]);
       }
@@ -396,6 +412,48 @@ export function WizardForm() {
                 dir="ltr"
                 {...register('email')}
               />
+              <div className="border-border bg-surface rounded-lg border px-4 py-3">
+                <Controller
+                  control={control}
+                  name="clientAccess"
+                  render={({ field }) => (
+                    <Switch
+                      id="client-access"
+                      label={t('clientAccess')}
+                      description={t('clientAccessHint')}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+                {clientAccess ? (
+                  <div className="mt-3">
+                    <Input
+                      label={t('ownerEmail')}
+                      type="email"
+                      inputMode="email"
+                      autoComplete="off"
+                      enterKeyHint="next"
+                      dir="ltr"
+                      placeholder="client@exemple.ma"
+                      className="bg-bg text-[16px]"
+                      hint={t('ownerEmailHint')}
+                      error={
+                        formState.errors.ownerEmail
+                          ? formState.errors.ownerEmail.message === 'owner_email_required'
+                            ? t('ownerEmailRequired')
+                            : t('ownerEmailInvalid')
+                          : undefined
+                      }
+                      {...register('ownerEmail', {
+                        onChange: () => {
+                          ownerEmailTouched.current = true;
+                        },
+                      })}
+                    />
+                  </div>
+                ) : null}
+              </div>
               <Input label={t('address')} className="text-[16px]" {...register('addressFr')} />
               <Input
                 label={t('maps')}

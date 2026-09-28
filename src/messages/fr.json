@@ -297,7 +297,14 @@
       "submit": "Créer le profil",
       "draftRestored": "Brouillon repris",
       "offline": "En attente de connexion",
-      "creating": "Création…"
+      "creating": "Création…",
+      "clientAccess": "Espace client",
+      "clientAccessHint": "Le commerçant modifie lui-même ses liens, ses horaires et son logo depuis son téléphone.",
+      "ownerEmail": "E-mail de connexion du client",
+      "ownerEmailHint": "Sert uniquement à se connecter. Vous lui enverrez le lien sur WhatsApp.",
+      "ownerEmailRequired": "Indiquez l’e-mail du client, ou désactivez l’espace client.",
+      "ownerEmailInvalid": "Adresse e-mail invalide.",
+      "ownerFailed": "Profil créé. L’espace client n’a pas pu être ouvert : réessayez depuis cet écran."
     },
     "ready": {
       "title": "Lien prêt",
@@ -392,7 +399,8 @@
       "phone": "Téléphone",
       "whatsapp": "WhatsApp",
       "custom": "Lien"
-    }
+    },
+    "zoomLogo": "Agrandir le logo"
   },
   "legal": {
     "mentions": "Mentions légales",

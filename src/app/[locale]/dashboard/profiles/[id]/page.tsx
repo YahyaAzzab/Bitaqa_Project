@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ProfileActions } from '@/features/profiles/profile-actions';
+import { loadOwnerEmail } from '@/features/profiles/owner-email';
 import { ProfileLogoEditor } from '@/features/profiles/profile-logo-editor';
 import { ProfileOwnerAccess } from '@/features/profiles/profile-owner-access';
 import type { Locale } from '@/i18n/config';
@@ -11,7 +12,6 @@ import { isSupabaseConfigured } from '@/lib/env';
 import { formatMad } from '@/lib/money';
 import { publicProfileUrl } from '@/lib/site-url';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createServiceClient } from '@/lib/supabase/service';
 import type { Json } from '@/lib/supabase/database.types';
 
 type ScanStats = {
@@ -36,12 +36,6 @@ function asScanStats(raw: Json | null): ScanStats {
         ? (o.by_device as Record<string, number>)
         : {},
   };
-}
-
-async function loadOwnerEmail(ownerId: string | null): Promise<string | null> {
-  if (!ownerId) return null;
-  const { data } = await createServiceClient().auth.admin.getUserById(ownerId);
-  return data.user?.email ?? null;
 }
 
 export default async function ProfileDetailPage({

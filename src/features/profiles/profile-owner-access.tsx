@@ -2,12 +2,13 @@
 
 import { Check, Copy, KeyRound, MessageCircle, UserRound } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { inviteProfileOwner, revokeProfileOwner } from '@/features/profiles/owner-actions';
+import { takeOwnerLink } from '@/features/profiles/owner-link-handoff';
 import { useRouter } from '@/i18n/navigation';
 import { toWhatsAppHref } from '@/lib/profile/urls';
 
@@ -17,6 +18,8 @@ type Props = {
   ownerEmail: string | null;
   clientPhone: string | null;
   businessName: string;
+  /** Écran « Lien prêt » : reprend le lien créé avec le profil. */
+  handoffSlug?: string;
 };
 
 export function ProfileOwnerAccess({
@@ -25,6 +28,7 @@ export function ProfileOwnerAccess({
   ownerEmail,
   clientPhone,
   businessName,
+  handoffSlug,
 }: Props) {
   const t = useTranslations('dashboard.owner');
   const { toast } = useToast();
@@ -35,6 +39,12 @@ export function ProfileOwnerAccess({
   const [copied, setCopied] = useState(false);
   const [revokeOpen, setRevokeOpen] = useState(false);
   const [pending, start] = useTransition();
+
+  useEffect(() => {
+    if (!handoffSlug) return;
+    const handedOff = takeOwnerLink(handoffSlug);
+    if (handedOff) setLink(handedOff);
+  }, [handoffSlug]);
 
   const invite = (target: string) => {
     setError(null);
