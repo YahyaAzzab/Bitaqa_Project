@@ -185,7 +185,22 @@
       "saved": "Profil mis à jour",
       "renewed": "Renouvelé d’un an",
       "confirmRenew": "Encaisser le renouvellement et prolonger d’un an ?",
-      "confirmSuspend": "Suspendre ce profil ? Le lien restera, le contenu sera réduit.",
+      "confirmSuspend": "Suspendre ce profil ? La carte n’affichera plus rien jusqu’à sa réactivation. Rien n’est effacé.",
+      "suspended": "Profil suspendu — la carte ne l’affiche plus",
+      "reactivate": "Réactiver le profil",
+      "reactivated": "Profil de nouveau en ligne",
+      "delete": "Supprimer définitivement",
+      "confirmDelete": "Le profil, ses liens, ses statistiques et sa commande éventuelle seront effacés, ainsi que l’accès du client. Les ventes restent dans la caisse. La carte ne mènera plus nulle part.",
+      "deleteTypeName": "Tapez « {name} » pour confirmer",
+      "deleteConfirmCta": "Supprimer",
+      "deleted": "Profil supprimé",
+      "actionErrors": {
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "forbidden": "Action réservée à l’administrateur.",
+        "not_found": "Ce profil n’existe plus.",
+        "invalid": "Vérifiez les informations saisies.",
+        "generic": "L’action n’a pas abouti. Réessayez."
+      },
       "logoSaved": "Logo mis à jour sur la carte",
       "logoSaveFailed": "Le logo n’a pas pu être enregistré. Réessayez."
     },

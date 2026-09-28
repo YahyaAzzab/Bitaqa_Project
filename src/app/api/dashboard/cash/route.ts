@@ -20,7 +20,9 @@ export async function GET() {
 
   let salesQuery = supabase
     .from('sales')
-    .select('id, amount_mad, kind, collected_at, profiles(business_name_fr, business_name_ar)')
+    .select(
+      'id, amount_mad, kind, collected_at, profile_name, profiles(business_name_fr, business_name_ar)',
+    )
     .gte('collected_at', sinceIso)
     .order('collected_at', { ascending: false });
 

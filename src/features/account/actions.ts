@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
@@ -9,6 +9,7 @@ import { safeAccountNext } from '@/lib/auth/paths';
 import { env } from '@/lib/env';
 import { normalizeMoroccanPhone } from '@/lib/phone';
 import { buildLinksPayload, emptyToNull } from '@/lib/profile/links-payload';
+import { revalidatePublicProfile } from '@/lib/profile/revalidate-public';
 import { ownerProfileSchema, type OwnerProfileValues } from '@/lib/profile/schema';
 import { rateLimit } from '@/lib/rate-limit';
 import { publicSiteUrl } from '@/lib/site-url';
@@ -188,9 +189,7 @@ export async function saveOwnProfile(
 
   if (error || !slug) return { ok: false, error: mapRpcError(error?.message ?? '') };
 
-  revalidateTag(`profile:${slug}`);
-  revalidatePath(`/fr/${slug}`);
-  revalidatePath(`/ar/${slug}`);
+  await revalidatePublicProfile(slug);
   revalidatePath('/fr/account');
   revalidatePath('/ar/account');
   return { ok: true, data: { slug } };

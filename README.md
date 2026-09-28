@@ -15,6 +15,7 @@ Renseignez les clés Supabase dans `.env.local`, puis appliquez **dans l’ordre
 2. `supabase/migrations/20240922120000_rpcs.sql`
 3. `supabase/migrations/20260928120000_client_accounts.sql`
 4. `supabase/migrations/20260928150000_owner_credentials.sql`
+5. `supabase/migrations/20260928170000_admin_delete_profile.sql`
 
 (SQL Editor Supabase ou CLI).
 
@@ -43,7 +44,11 @@ Mots de passe : l’admin voit et change, depuis la fiche profil, le mot de pass
 
 ## Variables d’environnement
 
-Voir `.env.example` : URL et clé anon publiques, `SUPABASE_SERVICE_ROLE_KEY` côté serveur uniquement, `NEXT_PUBLIC_SITE_URL`, et `SELLER_COOKIE_SECRET` (optionnel, signe le cookie de rôle vendeur ; à défaut la clé service role est utilisée) et `OWNER_PASSWORD_KEY` (optionnel, chiffre les mots de passe commerçants ; à ne jamais changer une fois en production, sinon les mots de passe enregistrés deviennent illisibles).
+Voir `.env.example` : URL et clé anon publiques, `SUPABASE_SERVICE_ROLE_KEY` côté serveur uniquement, `NEXT_PUBLIC_SITE_URL`, et `SELLER_COOKIE_SECRET` (optionnel, signe le cookie de rôle vendeur ; à défaut la clé service role est utilisée) et `OWNER_PASSWORD_KEY` (optionnel, chiffre les mots de passe commerçants ; à ne jamais changer une fois en production, sinon les mots de passe enregistrés deviennent illisibles) et `REVALIDATE_SECRET` (optionnel, identique en local et en production ; à défaut la clé service role est utilisée).
+
+Les cartes pointent toujours vers le domaine de production. Une modification faite depuis un autre environnement (local, preview) appelle donc aussi `/api/revalidate` en production, avec une requête signée, pour que la page publique se mette à jour immédiatement.
+
+La suppression d’un profil (admin uniquement) efface aussi ses liens, scans et commandes, son logo et le compte du commerçant s’il n’a pas d’autre profil. Les ventes restent en caisse avec le nom du commerce.
 
 ## Comptes vendeurs
 

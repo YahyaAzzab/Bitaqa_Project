@@ -222,7 +222,8 @@ export type Database = {
       sales: {
         Row: {
           id: string;
-          profile_id: string;
+          profile_id: string | null;
+          profile_name: string | null;
           seller_id: string;
           plan_code: string;
           kind: SaleKind;
@@ -232,7 +233,8 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          profile_id: string;
+          profile_id?: string | null;
+          profile_name?: string | null;
           seller_id: string;
           plan_code: string;
           kind?: SaleKind;
@@ -242,7 +244,8 @@ export type Database = {
         };
         Update: {
           id?: string;
-          profile_id?: string;
+          profile_id?: string | null;
+          profile_name?: string | null;
           seller_id?: string;
           plan_code?: string;
           kind?: SaleKind;
@@ -448,6 +451,10 @@ export type Database = {
       admin_scan_overview: {
         Args: Record<string, never>;
         Returns: Json;
+      };
+      admin_delete_profile: {
+        Args: { p_profile_id: string };
+        Returns: Array<{ slug: string; logo_url: string | null; owner_user_id: string | null }>;
       };
     };
     Enums: {

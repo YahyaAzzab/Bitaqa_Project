@@ -54,7 +54,7 @@ export async function GET(request: Request) {
   const { data, error } = await supabase
     .from('sales')
     .select(
-      'id, amount_mad, kind, plan_code, collected_at, note, seller_id, profiles(business_name_fr, slug), sellers(full_name)',
+      'id, amount_mad, kind, plan_code, collected_at, note, seller_id, profile_name, profiles(business_name_fr, slug), sellers(full_name)',
     )
     .gte('collected_at', fromIso)
     .lte('collected_at', toIso)
@@ -72,6 +72,7 @@ export async function GET(request: Request) {
     collected_at: string;
     note: string | null;
     seller_id: string;
+    profile_name: string | null;
     profiles: { business_name_fr: string; slug: string } | null;
     sellers: { full_name: string } | null;
   };
@@ -100,7 +101,7 @@ export async function GET(request: Request) {
         r.kind,
         r.plan_code,
         csvEscape(r.sellers?.full_name ?? r.seller_id),
-        csvEscape(r.profiles?.business_name_fr ?? ''),
+        csvEscape(r.profiles?.business_name_fr ?? r.profile_name ?? ''),
         csvEscape(r.profiles?.slug ?? ''),
         csvEscape(r.note ?? ''),
       ].join(','),

@@ -1,12 +1,14 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { getSellerSession } from '@/lib/auth/session';
 import { env } from '@/lib/env';
+import { revalidatePublicProfile } from '@/lib/profile/revalidate-public';
 import { themeToDb } from '@/lib/profile/theme';
 import { THEME_IDS } from '@/lib/profile/themes';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import type { Database } from '@/lib/supabase/database.types';
 
 export type ProfileActionResult = { ok: true } | { ok: false; error: string };
@@ -47,9 +49,7 @@ const updateSchema = z.object({
 });
 
 async function revalidateProfile(slug: string, id: string) {
-  revalidateTag(`profile:${slug}`);
-  revalidatePath(`/fr/${slug}`);
-  revalidatePath(`/ar/${slug}`);
+  await revalidatePublicProfile(slug);
   revalidatePath(`/fr/dashboard/profiles/${id}`);
   revalidatePath(`/ar/dashboard/profiles/${id}`);
   revalidatePath('/fr/dashboard/profiles');
@@ -111,6 +111,89 @@ export async function suspendProfile(profileId: string): Promise<ProfileActionRe
   if (error) return { ok: false, error: 'generic' };
 
   await revalidateProfile(profile.slug, profile.id);
+  return { ok: true };
+}
+
+export async function reactivateProfile(profileId: string): Promise<ProfileActionResult> {
+  const session = await getSellerSession();
+  if (!session) return { ok: false, error: 'unauthorized' };
+  if (session.seller.role !== 'admin') return { ok: false, error: 'forbidden' };
+
+  const id = z.string().uuid().safeParse(profileId);
+  if (!id.success) return { ok: false, error: 'invalid' };
+
+  const supabase = await createServerSupabaseClient();
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, slug, expires_at')
+    .eq('id', id.data)
+    .maybeSingle();
+
+  if (!profile) return { ok: false, error: 'not_found' };
+
+  // Suspension never touched the paid period: resume it as it stands.
+  const status = new Date(profile.expires_at).getTime() > Date.now() ? 'active' : 'expired';
+  const { error } = await supabase.from('profiles').update({ status }).eq('id', profile.id);
+  if (error) return { ok: false, error: 'generic' };
+
+  await revalidateProfile(profile.slug, profile.id);
+  return { ok: true };
+}
+
+const LOGO_PREFIX = `${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/`;
+
+async function cleanUpDeletedProfile(logoUrl: string | null, ownerId: string | null) {
+  const service = createServiceClient();
+
+  if (logoUrl?.startsWith(LOGO_PREFIX)) {
+    const { count } = await service
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('logo_url', logoUrl);
+    if (!count) await service.storage.from('logos').remove([logoUrl.slice(LOGO_PREFIX.length)]);
+  }
+
+  if (ownerId) {
+    const [{ count: owned }, { data: seller }] = await Promise.all([
+      service
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('owner_user_id', ownerId),
+      service.from('sellers').select('id').eq('id', ownerId).maybeSingle(),
+    ]);
+    if (!owned && !seller) await service.auth.admin.deleteUser(ownerId);
+  }
+}
+
+export async function deleteProfile(profileId: string): Promise<ProfileActionResult> {
+  const session = await getSellerSession();
+  if (!session) return { ok: false, error: 'unauthorized' };
+  if (session.seller.role !== 'admin') return { ok: false, error: 'forbidden' };
+
+  const id = z.string().uuid().safeParse(profileId);
+  if (!id.success) return { ok: false, error: 'invalid' };
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase.rpc('admin_delete_profile', { p_profile_id: id.data });
+  if (error) {
+    if (error.message.includes('forbidden')) return { ok: false, error: 'forbidden' };
+    if (error.message.includes('not_found')) return { ok: false, error: 'not_found' };
+    return { ok: false, error: 'generic' };
+  }
+
+  const deleted = data?.[0];
+  if (!deleted) return { ok: false, error: 'not_found' };
+
+  // The profile is already gone; leftover files or accounts must not turn this into a failure.
+  await cleanUpDeletedProfile(deleted.logo_url, deleted.owner_user_id).catch(() => undefined);
+
+  await revalidatePublicProfile(deleted.slug);
+  for (const locale of ['fr', 'ar']) {
+    revalidatePath(`/${locale}/dashboard`);
+    revalidatePath(`/${locale}/dashboard/profiles`);
+    revalidatePath(`/${locale}/dashboard/cash`);
+    revalidatePath(`/${locale}/dashboard/orders`);
+  }
   return { ok: true };
 }
 

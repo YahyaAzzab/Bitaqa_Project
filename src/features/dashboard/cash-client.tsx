@@ -20,6 +20,7 @@ type SaleRow = SaleAmountRow & {
   id: string;
   kind: SaleKind;
   collected_at: string;
+  profile_name: string | null;
   profiles: { business_name_fr: string; business_name_ar: string | null } | null;
 };
 
@@ -162,9 +163,9 @@ export function CashClient() {
           <ul className="mt-2 space-y-2">
             {data.sales.map((sale) => {
               const business =
-                locale === 'ar'
+                (locale === 'ar'
                   ? sale.profiles?.business_name_ar || sale.profiles?.business_name_fr
-                  : sale.profiles?.business_name_fr;
+                  : sale.profiles?.business_name_fr) ?? sale.profile_name;
               const date = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-MA' : 'fr-MA', {
                 day: 'numeric',
                 month: 'short',

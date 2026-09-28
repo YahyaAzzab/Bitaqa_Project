@@ -165,6 +165,8 @@ export default async function ProfileDetailPage({
         profileId={profile.id}
         slug={profile.slug}
         planCode={profile.plan_code}
+        suspended={profile.status === 'suspended'}
+        businessName={profile.business_name_fr}
         isAdmin={session.seller.role === 'admin'}
         locale={locale}
         publicUrl={publicUrl}

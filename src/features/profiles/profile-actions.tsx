@@ -1,6 +1,6 @@
 'use client';
 
-import { ExternalLink, RefreshCw } from 'lucide-react';
+import { ExternalLink, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useState, useTransition } from 'react';
@@ -8,7 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
-import { renewProfile, suspendProfile } from '@/features/profiles/actions';
+import {
+  deleteProfile,
+  reactivateProfile,
+  renewProfile,
+  suspendProfile,
+} from '@/features/profiles/actions';
 import { PLAN_PRICES } from '@/lib/profile/schema';
 import { formatMad } from '@/lib/money';
 
@@ -16,46 +21,99 @@ type Props = {
   profileId: string;
   slug: string;
   planCode: string;
+  suspended: boolean;
+  businessName: string;
   isAdmin: boolean;
   locale: 'fr' | 'ar';
   publicUrl: string;
 };
 
-export function ProfileActions({ profileId, slug, planCode, isAdmin, locale, publicUrl }: Props) {
+type OpenDialog = 'renew' | 'suspend' | 'delete' | null;
+
+const KNOWN_ERRORS = ['unauthorized', 'forbidden', 'not_found', 'invalid'] as const;
+
+export function ProfileActions({
+  profileId,
+  slug,
+  planCode,
+  suspended,
+  businessName,
+  isAdmin,
+  locale,
+  publicUrl,
+}: Props) {
   const t = useTranslations('dashboard.profiles');
   const tProfile = useTranslations('profile');
   const { toast } = useToast();
   const router = useRouter();
-  const [renewOpen, setRenewOpen] = useState(false);
-  const [suspendOpen, setSuspendOpen] = useState(false);
+  const [open, setOpen] = useState<OpenDialog>(null);
   const renewalDefault = planCode === 'signature' ? PLAN_PRICES.signature : PLAN_PRICES.essentiel;
   const [amount, setAmount] = useState<number>(renewalDefault);
+  const [confirmName, setConfirmName] = useState('');
   const [pending, start] = useTransition();
 
-  const onRenew = () => {
+  const errorMessage = (code: string) =>
+    t(`actionErrors.${KNOWN_ERRORS.find((known) => known === code) ?? 'generic'}`);
+
+  const run = (
+    action: () => Promise<{ ok: true } | { ok: false; error: string }>,
+    onSuccess: () => void,
+  ) => {
     start(async () => {
-      const res = await renewProfile(profileId, amount);
+      const res = await action();
       if (!res.ok) {
-        toast({ title: res.error, variant: 'error' });
+        toast({ title: errorMessage(res.error), variant: 'error' });
         return;
       }
-      toast({ title: t('renewed'), variant: 'success' });
-      setRenewOpen(false);
-      router.refresh();
+      onSuccess();
     });
   };
 
-  const onSuspend = () => {
-    start(async () => {
-      const res = await suspendProfile(profileId);
-      if (!res.ok) {
-        toast({ title: res.error, variant: 'error' });
-        return;
-      }
-      setSuspendOpen(false);
-      router.refresh();
-    });
+  const onRenew = () =>
+    run(
+      () => renewProfile(profileId, amount),
+      () => {
+        toast({ title: t('renewed'), variant: 'success' });
+        setOpen(null);
+        router.refresh();
+      },
+    );
+
+  const onSuspend = () =>
+    run(
+      () => suspendProfile(profileId),
+      () => {
+        toast({ title: t('suspended'), variant: 'success' });
+        setOpen(null);
+        router.refresh();
+      },
+    );
+
+  const onReactivate = () =>
+    run(
+      () => reactivateProfile(profileId),
+      () => {
+        toast({ title: t('reactivated'), variant: 'success' });
+        router.refresh();
+      },
+    );
+
+  const onDelete = () =>
+    run(
+      () => deleteProfile(profileId),
+      () => {
+        toast({ title: t('deleted'), variant: 'success' });
+        setOpen(null);
+        router.replace('/dashboard/profiles');
+      },
+    );
+
+  const closeDialog = () => {
+    setOpen(null);
+    setConfirmName('');
   };
+
+  const deleteConfirmed = confirmName.trim().toLowerCase() === businessName.trim().toLowerCase();
 
   return (
     <div className="space-y-2">
@@ -82,24 +140,38 @@ export function ProfileActions({ profileId, slug, planCode, isAdmin, locale, pub
       >
         {t('copy')}
       </Button>
-      <Button variant="primary" className="w-full" onClick={() => setRenewOpen(true)}>
+      <Button variant="primary" className="w-full" onClick={() => setOpen('renew')}>
         <RefreshCw className="size-4" strokeWidth={1.75} />
         {t('renew')}
       </Button>
+
       {isAdmin ? (
-        <Button variant="danger" className="w-full" onClick={() => setSuspendOpen(true)}>
-          {t('suspend')}
-        </Button>
+        <div className="border-border mt-4 space-y-2 border-t pt-4">
+          {suspended ? (
+            <Button variant="secondary" className="w-full" loading={pending} onClick={onReactivate}>
+              <RotateCcw className="size-4" strokeWidth={1.75} />
+              {t('reactivate')}
+            </Button>
+          ) : (
+            <Button variant="secondary" className="w-full" onClick={() => setOpen('suspend')}>
+              {t('suspend')}
+            </Button>
+          )}
+          <Button variant="danger" className="w-full" onClick={() => setOpen('delete')}>
+            <Trash2 className="size-4" strokeWidth={1.75} />
+            {t('delete')}
+          </Button>
+        </div>
       ) : null}
 
       <Dialog
-        open={renewOpen}
-        onClose={() => setRenewOpen(false)}
+        open={open === 'renew'}
+        onClose={closeDialog}
         title={t('renew')}
         closeLabel={tProfile('close')}
         footer={
           <div className="flex gap-2">
-            <Button variant="secondary" className="flex-1" onClick={() => setRenewOpen(false)}>
+            <Button variant="secondary" className="flex-1" onClick={closeDialog}>
               {tProfile('close')}
             </Button>
             <Button className="flex-1" loading={pending} onClick={onRenew}>
@@ -125,13 +197,13 @@ export function ProfileActions({ profileId, slug, planCode, isAdmin, locale, pub
       </Dialog>
 
       <Dialog
-        open={suspendOpen}
-        onClose={() => setSuspendOpen(false)}
+        open={open === 'suspend'}
+        onClose={closeDialog}
         title={t('suspend')}
         closeLabel={tProfile('close')}
         footer={
           <div className="flex gap-2">
-            <Button variant="secondary" className="flex-1" onClick={() => setSuspendOpen(false)}>
+            <Button variant="secondary" className="flex-1" onClick={closeDialog}>
               {tProfile('close')}
             </Button>
             <Button variant="danger" className="flex-1" loading={pending} onClick={onSuspend}>
@@ -141,6 +213,43 @@ export function ProfileActions({ profileId, slug, planCode, isAdmin, locale, pub
         }
       >
         <p className="text-text-secondary text-[14px]">{t('confirmSuspend')}</p>
+      </Dialog>
+
+      <Dialog
+        open={open === 'delete'}
+        onClose={closeDialog}
+        title={t('delete')}
+        closeLabel={tProfile('close')}
+        footer={
+          <div className="flex gap-2">
+            <Button variant="secondary" className="flex-1" onClick={closeDialog}>
+              {tProfile('close')}
+            </Button>
+            <Button
+              variant="danger"
+              className="flex-1"
+              loading={pending}
+              disabled={!deleteConfirmed}
+              onClick={onDelete}
+            >
+              {t('deleteConfirmCta')}
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-text-secondary text-[14px]">{t('confirmDelete')}</p>
+        <div className="mt-4">
+          <Input
+            label={t('deleteTypeName', { name: businessName })}
+            autoComplete="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            enterKeyHint="done"
+            className="text-[16px]"
+            value={confirmName}
+            onChange={(e) => setConfirmName(e.target.value)}
+          />
+        </div>
       </Dialog>
     </div>
   );

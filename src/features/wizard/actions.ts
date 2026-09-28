@@ -1,11 +1,12 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 import { provisionProfileOwner } from '@/features/profiles/owner-provision';
 import { getSellerSession } from '@/lib/auth/session';
 import { normalizeMoroccanPhone } from '@/lib/phone';
 import { isReservedSlug, isValidSlug } from '@/lib/profile/slug';
 import { buildLinksPayload, emptyToNull } from '@/lib/profile/links-payload';
+import { revalidatePublicProfile } from '@/lib/profile/revalidate-public';
 import { themeToDb } from '@/lib/profile/theme';
 import { wizardFormSchema, type WizardFormValues } from '@/lib/profile/schema';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
@@ -100,9 +101,7 @@ export async function createProfile(raw: WizardFormValues): Promise<ActionResult
       : { error: provisioned.error };
   }
 
-  revalidateTag(`profile:${values.slug}`);
-  revalidatePath(`/fr/${values.slug}`);
-  revalidatePath(`/ar/${values.slug}`);
+  await revalidatePublicProfile(values.slug);
   revalidatePath('/fr/dashboard');
   revalidatePath('/ar/dashboard');
   revalidatePath('/fr/dashboard/profiles');
