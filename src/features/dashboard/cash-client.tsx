@@ -95,7 +95,7 @@ export function CashClient() {
         ).map(([key, value]) => (
           <div key={key} className="border-border bg-surface rounded-lg border p-3">
             <p className="text-text-muted text-[11px] tracking-wide uppercase">{t(key)}</p>
-            <p className="tabular mt-2 text-[15px] font-semibold leading-tight sm:text-[17px]">
+            <p className="tabular mt-2 text-[15px] leading-tight font-semibold sm:text-[17px]">
               {formatMad(value, locale)}
             </p>
           </div>

@@ -47,6 +47,8 @@ const ARABIC_MAP: Record<string, string> = {
 };
 
 const RESERVED = new Set([
+  'account',
+  'auth',
   'admin',
   'api',
   'app',
@@ -83,10 +85,7 @@ export function transliterateToSlug(input: string): string {
       out += '-';
     }
   }
-  return out
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 40);
+  return out.replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
 }
 
 export function isValidSlug(slug: string): boolean {

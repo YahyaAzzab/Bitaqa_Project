@@ -74,22 +74,22 @@ export function HomeClient() {
 
   return (
     <>
-      <p className="text-text-secondary text-[14px]">
-        {t('hello', { name: data.sellerName })}
-      </p>
+      <p className="text-text-secondary text-[14px]">{t('hello', { name: data.sellerName })}</p>
 
       <section className="mt-5 grid grid-cols-2 gap-3" aria-label={t('home.today')}>
         <div className="border-border bg-surface rounded-lg border p-4">
           <p className="text-text-muted text-[12px] tracking-wide uppercase">
             {t('home.profilesCreated')}
           </p>
-          <p className="tabular mt-2 text-[28px] font-semibold leading-none">
+          <p className="tabular mt-2 text-[28px] leading-none font-semibold">
             {data.profilesToday}
           </p>
         </div>
         <div className="border-border bg-surface rounded-lg border p-4">
-          <p className="text-text-muted text-[12px] tracking-wide uppercase">{t('home.collected')}</p>
-          <p className="tabular mt-2 text-[22px] font-semibold leading-none">
+          <p className="text-text-muted text-[12px] tracking-wide uppercase">
+            {t('home.collected')}
+          </p>
+          <p className="tabular mt-2 text-[22px] leading-none font-semibold">
             {formatMad(data.collectedToday, locale)}
           </p>
         </div>
@@ -119,7 +119,9 @@ export function HomeClient() {
                   className="border-border bg-surface focus-ring flex min-h-12 items-center justify-between gap-2 rounded-md border px-3 text-[14px]"
                 >
                   <span className="truncate">{p.business_name_fr}</span>
-                  <span className="text-text-muted shrink-0 text-[12px]">{t('home.renewSoon')}</span>
+                  <span className="text-text-muted shrink-0 text-[12px]">
+                    {t('home.renewSoon')}
+                  </span>
                 </Link>
               </li>
             ))}

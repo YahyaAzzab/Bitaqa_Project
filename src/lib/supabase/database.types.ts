@@ -90,6 +90,7 @@ export type Database = {
           phone: string | null;
           email: string | null;
           hours: Json | null;
+          owner_user_id: string | null;
           expires_at: string;
           created_at: string;
           updated_at: string;
@@ -113,6 +114,7 @@ export type Database = {
           phone?: string | null;
           email?: string | null;
           hours?: Json | null;
+          owner_user_id?: string | null;
           expires_at?: string;
           created_at?: string;
           updated_at?: string;
@@ -136,6 +138,7 @@ export type Database = {
           phone?: string | null;
           email?: string | null;
           hours?: Json | null;
+          owner_user_id?: string | null;
           expires_at?: string;
           created_at?: string;
           updated_at?: string;
@@ -366,6 +369,26 @@ export type Database = {
       is_seller: { Args: Record<string, never>; Returns: boolean };
       is_admin: { Args: Record<string, never>; Returns: boolean };
       can_manage_profile: { Args: { pid: string }; Returns: boolean };
+      is_profile_owner: { Args: { pid: string }; Returns: boolean };
+      owns_any_profile: { Args: Record<string, never>; Returns: boolean };
+      owner_update_profile: {
+        Args: {
+          p_profile_id: string;
+          p_business_name_fr: string;
+          p_business_name_ar: string | null;
+          p_tagline_fr: string | null;
+          p_tagline_ar: string | null;
+          p_address_fr: string | null;
+          p_logo_url: string | null;
+          p_accent_color: string;
+          p_theme: string;
+          p_phone: string | null;
+          p_email: string | null;
+          p_hours: Json | null;
+          p_links: Json;
+        };
+        Returns: string;
+      };
       create_profile_atomic: {
         Args: {
           p_slug: string;

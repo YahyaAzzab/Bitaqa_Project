@@ -58,13 +58,26 @@ export async function signIn(_prev: LoginState, formData: FormData): Promise<Log
     .maybeSingle();
 
   if (!seller) {
+    // Un commerçant qui se trompe de porte arrive directement dans son espace.
+    const { data: owned } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('owner_user_id', user.id)
+      .limit(1)
+      .maybeSingle();
+    if (owned) redirect(`/${locale}/account`);
+
     await supabase.auth.signOut();
     return { error: 'forbidden' };
   }
 
   const cookieStore = await cookies();
   cookieStore.set('bitaqa_seller', user.id, cookieOpts(COOKIE_MAX_AGE));
-  cookieStore.set('bitaqa_seller_profile', encodeSellerProfile(seller), cookieOpts(COOKIE_MAX_AGE));
+  cookieStore.set(
+    'bitaqa_seller_profile',
+    await encodeSellerProfile(seller),
+    cookieOpts(COOKIE_MAX_AGE),
+  );
 
   redirect(safeDashboardNext(next ?? null, locale));
 }

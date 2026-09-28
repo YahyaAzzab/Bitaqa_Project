@@ -133,7 +133,7 @@ export function ProfilesList({ profiles }: Props) {
         </ul>
       )}
 
-      <p className="text-text-muted text-center text-[12px] tabular">
+      <p className="text-text-muted tabular text-center text-[12px]">
         {filtered.length}/{profiles.length}
       </p>
     </div>

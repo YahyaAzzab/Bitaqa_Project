@@ -354,7 +354,11 @@ html[lang='ar'] body {
   inset: 18% 12%;
   z-index: 0;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 22%, transparent), transparent 68%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent) 22%, transparent),
+    transparent 68%
+  );
   filter: blur(28px);
   pointer-events: none;
 }

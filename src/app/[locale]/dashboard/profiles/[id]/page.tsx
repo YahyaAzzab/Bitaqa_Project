@@ -4,12 +4,14 @@ import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ProfileActions } from '@/features/profiles/profile-actions';
 import { ProfileLogoEditor } from '@/features/profiles/profile-logo-editor';
+import { ProfileOwnerAccess } from '@/features/profiles/profile-owner-access';
 import type { Locale } from '@/i18n/config';
 import { getSellerSession } from '@/lib/auth/session';
 import { isSupabaseConfigured } from '@/lib/env';
 import { formatMad } from '@/lib/money';
 import { publicProfileUrl } from '@/lib/site-url';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import type { Json } from '@/lib/supabase/database.types';
 
 type ScanStats = {
@@ -36,6 +38,12 @@ function asScanStats(raw: Json | null): ScanStats {
   };
 }
 
+async function loadOwnerEmail(ownerId: string | null): Promise<string | null> {
+  if (!ownerId) return null;
+  const { data } = await createServiceClient().auth.admin.getUserById(ownerId);
+  return data.user?.email ?? null;
+}
+
 export default async function ProfileDetailPage({
   params,
 }: {
@@ -56,7 +64,7 @@ export default async function ProfileDetailPage({
   const { data: profile } = await q.maybeSingle();
   if (!profile) notFound();
 
-  const [salesRes, ordersRes, statsRes] = await Promise.all([
+  const [salesRes, ordersRes, statsRes, ownerEmail] = await Promise.all([
     supabase
       .from('sales')
       .select('id, kind, amount_mad, collected_at, plan_code')
@@ -70,6 +78,7 @@ export default async function ProfileDetailPage({
       .order('ordered_at', { ascending: false })
       .limit(5),
     supabase.rpc('profile_scan_stats', { p_profile_id: profile.id }),
+    loadOwnerEmail(profile.owner_user_id),
   ]);
 
   const sales = salesRes.data;
@@ -91,114 +100,118 @@ export default async function ProfileDetailPage({
         <Avatar name={name} src={profile.logo_url} size={64} className="rounded-xl" />
         <div className="min-w-0">
           <p className="truncate text-[20px] font-semibold tracking-tight">{name}</p>
-            <p className="text-text-muted text-[13px]" dir="ltr">
-              /{profile.slug}
-            </p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <Badge
-                tone={
-                  profile.status === 'active'
-                    ? 'success'
-                    : profile.status === 'expired'
-                      ? 'warning'
-                      : 'error'
-                }
-              >
-                {profile.status}
-              </Badge>
-              <Badge tone="accent">{profile.plan_code}</Badge>
-            </div>
+          <p className="text-text-muted text-[13px]" dir="ltr">
+            /{profile.slug}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Badge
+              tone={
+                profile.status === 'active'
+                  ? 'success'
+                  : profile.status === 'expired'
+                    ? 'warning'
+                    : 'error'
+              }
+            >
+              {profile.status}
+            </Badge>
+            <Badge tone="accent">{profile.plan_code}</Badge>
           </div>
         </div>
+      </div>
 
-        <p className="text-text-secondary text-[14px]">{t('expires', { date: expires })}</p>
+      <p className="text-text-secondary text-[14px]">{t('expires', { date: expires })}</p>
 
-        <section>
-          <h2 className="text-text-muted text-[12px] font-medium tracking-[0.12em] uppercase">
-            {t('scans')}
-          </h2>
-          <div className="mt-2 grid grid-cols-2 gap-3">
-            <div className="border-border bg-surface rounded-lg border p-4">
-              <p className="text-text-muted text-[12px] uppercase">{t('scans7')}</p>
-              <p className="tabular mt-2 text-[28px] font-semibold leading-none">
-                {stats.scans_7 ?? 0}
-              </p>
-            </div>
-            <div className="border-border bg-surface rounded-lg border p-4">
-              <p className="text-text-muted text-[12px] uppercase">{t('scans30')}</p>
-              <p className="tabular mt-2 text-[28px] font-semibold leading-none">
-                {stats.scans_30 ?? 0}
-              </p>
-            </div>
+      <section>
+        <h2 className="text-text-muted text-[12px] font-medium tracking-[0.12em] uppercase">
+          {t('scans')}
+        </h2>
+        <div className="mt-2 grid grid-cols-2 gap-3">
+          <div className="border-border bg-surface rounded-lg border p-4">
+            <p className="text-text-muted text-[12px] uppercase">{t('scans7')}</p>
+            <p className="tabular mt-2 text-[28px] leading-none font-semibold">
+              {stats.scans_7 ?? 0}
+            </p>
           </div>
-          {stats.by_country && Object.keys(stats.by_country).length > 0 ? (
-            <ul className="text-text-secondary mt-3 space-y-1 text-[13px]">
-              {Object.entries(stats.by_country)
-                .slice(0, 5)
-                .map(([country, count]) => (
-                  <li key={country} className="flex justify-between">
-                    <span dir="ltr">{country}</span>
-                    <span className="tabular">{count}</span>
-                  </li>
-                ))}
-            </ul>
-          ) : null}
-        </section>
+          <div className="border-border bg-surface rounded-lg border p-4">
+            <p className="text-text-muted text-[12px] uppercase">{t('scans30')}</p>
+            <p className="tabular mt-2 text-[28px] leading-none font-semibold">
+              {stats.scans_30 ?? 0}
+            </p>
+          </div>
+        </div>
+        {stats.by_country && Object.keys(stats.by_country).length > 0 ? (
+          <ul className="text-text-secondary mt-3 space-y-1 text-[13px]">
+            {Object.entries(stats.by_country)
+              .slice(0, 5)
+              .map(([country, count]) => (
+                <li key={country} className="flex justify-between">
+                  <span dir="ltr">{country}</span>
+                  <span className="tabular">{count}</span>
+                </li>
+              ))}
+          </ul>
+        ) : null}
+      </section>
 
-        <ProfileLogoEditor
-          profileId={profile.id}
-          businessName={name}
-          logoUrl={profile.logo_url}
-        />
+      <ProfileLogoEditor profileId={profile.id} businessName={name} logoUrl={profile.logo_url} />
 
-        <ProfileActions
-          profileId={profile.id}
-          slug={profile.slug}
-          planCode={profile.plan_code}
-          isAdmin={session.seller.role === 'admin'}
-          locale={locale}
-          publicUrl={publicUrl}
-        />
+      <ProfileOwnerAccess
+        profileId={profile.id}
+        locale={locale}
+        ownerEmail={ownerEmail}
+        clientPhone={profile.phone}
+        businessName={name}
+      />
 
+      <ProfileActions
+        profileId={profile.id}
+        slug={profile.slug}
+        planCode={profile.plan_code}
+        isAdmin={session.seller.role === 'admin'}
+        locale={locale}
+        publicUrl={publicUrl}
+      />
+
+      <section>
+        <h2 className="text-text-muted text-[12px] font-medium tracking-[0.12em] uppercase">
+          {t('sales')}
+        </h2>
+        <ul className="mt-2 space-y-2">
+          {(sales ?? []).map((s) => (
+            <li
+              key={s.id}
+              className="border-border bg-surface flex min-h-12 items-center justify-between rounded-md border px-3 text-[14px]"
+            >
+              <span>{s.kind}</span>
+              <span className="tabular">{formatMad(s.amount_mad, locale)}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {(orders ?? []).length > 0 ? (
         <section>
           <h2 className="text-text-muted text-[12px] font-medium tracking-[0.12em] uppercase">
-            {t('sales')}
+            {t('orders')}
           </h2>
           <ul className="mt-2 space-y-2">
-            {(sales ?? []).map((s) => (
+            {(orders ?? []).map((o) => (
               <li
-                key={s.id}
+                key={o.id}
                 className="border-border bg-surface flex min-h-12 items-center justify-between rounded-md border px-3 text-[14px]"
               >
-                <span>{s.kind}</span>
-                <span className="tabular">{formatMad(s.amount_mad, locale)}</span>
+                <span>{o.status}</span>
+                <span className="text-text-muted text-[12px]">
+                  {new Intl.DateTimeFormat(locale === 'ar' ? 'fr-MA' : 'fr-FR').format(
+                    new Date(o.ordered_at),
+                  )}
+                </span>
               </li>
             ))}
           </ul>
         </section>
-
-        {(orders ?? []).length > 0 ? (
-          <section>
-            <h2 className="text-text-muted text-[12px] font-medium tracking-[0.12em] uppercase">
-              {t('orders')}
-            </h2>
-            <ul className="mt-2 space-y-2">
-              {(orders ?? []).map((o) => (
-                <li
-                  key={o.id}
-                  className="border-border bg-surface flex min-h-12 items-center justify-between rounded-md border px-3 text-[14px]"
-                >
-                  <span>{o.status}</span>
-                  <span className="text-text-muted text-[12px]">
-                    {new Intl.DateTimeFormat(locale === 'ar' ? 'fr-MA' : 'fr-FR').format(
-                      new Date(o.ordered_at),
-                    )}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
+      ) : null}
     </div>
   );
 }

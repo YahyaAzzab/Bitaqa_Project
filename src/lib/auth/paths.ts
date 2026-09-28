@@ -18,6 +18,27 @@ export function isLoginPath(path: string): boolean {
   return path === '/login' || path.startsWith('/login/');
 }
 
+export function isAccountPath(path: string): boolean {
+  return path === '/account' || path.startsWith('/account/');
+}
+
+export function isAccountLoginPath(path: string): boolean {
+  return path === '/account/login' || path.startsWith('/account/login/');
+}
+
+/** N’accepte qu’un retour vers l’espace client de la même origine. */
+export function safeAccountNext(raw: string | null, locale: Locale): string {
+  const fallback = `/${locale}/account`;
+  if (!raw || !raw.startsWith('/') || raw.startsWith('//') || raw.includes('\\')) {
+    return fallback;
+  }
+  const { locale: nextLocale, path } = splitLocalePath(raw);
+  if (!isAccountPath(path) || isAccountLoginPath(path)) {
+    return fallback;
+  }
+  return `/${nextLocale}${path}`;
+}
+
 /** N’accepte qu’un retour vers le dashboard de la même origine. */
 export function safeDashboardNext(raw: string | null, locale: Locale): string {
   const fallback = `/${locale}/dashboard`;

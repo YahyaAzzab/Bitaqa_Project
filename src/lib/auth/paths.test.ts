@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { isDashboardPath, isLoginPath, safeDashboardNext, splitLocalePath } from './paths';
+import {
+  isAccountLoginPath,
+  isAccountPath,
+  isDashboardPath,
+  isLoginPath,
+  safeAccountNext,
+  safeDashboardNext,
+  splitLocalePath,
+} from './paths';
 
 describe('auth paths', () => {
   it('splits locale prefixes', () => {
@@ -19,5 +27,16 @@ describe('auth paths', () => {
     expect(safeDashboardNext('//evil.test', 'fr')).toBe('/fr/dashboard');
     expect(safeDashboardNext('/fr/login', 'fr')).toBe('/fr/dashboard');
     expect(safeDashboardNext('/fr/dashboard/profiles', 'ar')).toBe('/fr/dashboard/profiles');
+  });
+
+  it('keeps client redirects inside the client space', () => {
+    expect(isAccountPath('/account')).toBe(true);
+    expect(isAccountLoginPath('/account/login')).toBe(true);
+    expect(safeAccountNext('/ar/account', 'fr')).toBe('/ar/account');
+    expect(safeAccountNext('/fr/dashboard', 'fr')).toBe('/fr/account');
+    expect(safeAccountNext('/fr/account/login', 'fr')).toBe('/fr/account');
+    expect(safeAccountNext('//evil.test/account', 'fr')).toBe('/fr/account');
+    expect(safeAccountNext('/\\evil.test', 'ar')).toBe('/ar/account');
+    expect(safeAccountNext(null, 'ar')).toBe('/ar/account');
   });
 });

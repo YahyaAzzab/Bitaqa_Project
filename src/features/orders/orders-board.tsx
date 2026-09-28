@@ -9,7 +9,12 @@ import { OrderCard, type OrderCardData } from '@/features/orders/order-card';
 import type { OrderStatus } from '@/lib/supabase/database.types';
 import type { Locale } from '@/i18n/config';
 
-const FILTERS = ['ordered', 'in_production', 'ready', 'swapped'] as const satisfies readonly OrderStatus[];
+const FILTERS = [
+  'ordered',
+  'in_production',
+  'ready',
+  'swapped',
+] as const satisfies readonly OrderStatus[];
 
 type Filter = (typeof FILTERS)[number];
 

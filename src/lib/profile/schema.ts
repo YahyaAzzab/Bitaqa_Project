@@ -25,12 +25,20 @@ const linkTypeSchema = z.enum([
   'custom',
 ]);
 
-export const wizardLinkSchema = z.object({
+const linkObjectSchema = z.object({
   type: linkTypeSchema,
   labelFr: z.string().trim().max(60).optional(),
   labelAr: z.string().trim().max(60).optional(),
   value: z.string().trim().min(1).max(500),
 });
+
+function isLinkValueSafe(link: { type: string; value: string }): boolean {
+  return link.type === 'email' || link.type === 'phone' || isSafeProfileUrl(link.value);
+}
+
+const unsafeLink = { message: 'url_unsafe', path: ['value'] };
+
+export const wizardLinkSchema = linkObjectSchema.refine(isLinkValueSafe, unsafeLink);
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -87,12 +95,7 @@ export const wizardFormObjectSchema = z.object({
     .refine((v) => normalizeMoroccanPhone(v) !== null, { message: 'phone_invalid' }),
   whatsappSame: z.boolean(),
   whatsapp: z.string().trim().optional().or(z.literal('')),
-  email: z
-    .string()
-    .trim()
-    .email({ message: 'email_invalid' })
-    .optional()
-    .or(z.literal('')),
+  email: z.string().trim().email({ message: 'email_invalid' }).optional().or(z.literal('')),
   addressFr: z.string().trim().max(200).optional().or(z.literal('')),
   mapsUrl: z
     .string()
@@ -116,11 +119,22 @@ export const wizardFormObjectSchema = z.object({
   defaultLang: z.enum(['fr', 'ar']).default('fr'),
 });
 
-export const wizardFormSchema = wizardFormObjectSchema.superRefine((data, ctx) => {
+type ContactAndHours = {
+  hoursEnabled: boolean;
+  hours: WeeklyHoursInput;
+  whatsappSame: boolean;
+  whatsapp?: string;
+};
+
+function refineContactAndHours(data: ContactAndHours, ctx: z.RefinementCtx) {
   if (data.hoursEnabled) {
     for (const [day, slots] of Object.entries(data.hours)) {
       if (!areDaySlotsValid(slots)) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'hours_invalid', path: ['hours', day] });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'hours_invalid',
+          path: ['hours', day],
+        });
       }
     }
   }
@@ -134,7 +148,42 @@ export const wizardFormSchema = wizardFormObjectSchema.superRefine((data, ctx) =
       });
     }
   }
-});
+}
+
+export const wizardFormSchema = wizardFormObjectSchema.superRefine(refineContactAndHours);
+
+export const ownerLinkSchema = linkObjectSchema
+  .extend({ key: z.string().min(1).max(64) })
+  .refine(isLinkValueSafe, unsafeLink);
+
+/** Ce que le commerçant peut modifier seul — jamais le slug, le plan, le statut ni l'échéance. */
+export const ownerProfileObjectSchema = wizardFormObjectSchema
+  .pick({
+    businessNameFr: true,
+    businessNameAr: true,
+    taglineFr: true,
+    taglineAr: true,
+    phone: true,
+    whatsappSame: true,
+    whatsapp: true,
+    email: true,
+    addressFr: true,
+    mapsUrl: true,
+    logoUrl: true,
+    hoursEnabled: true,
+    hours: true,
+    theme: true,
+    accentColor: true,
+  })
+  .extend({
+    profileId: z.string().uuid(),
+    links: z.array(ownerLinkSchema).max(12),
+  });
+
+export const ownerProfileSchema = ownerProfileObjectSchema.superRefine(refineContactAndHours);
+
+export type OwnerProfileValues = z.infer<typeof ownerProfileObjectSchema>;
+export type OwnerLink = z.infer<typeof ownerLinkSchema>;
 
 export type WizardFormValues = z.infer<typeof wizardFormObjectSchema>;
 export type WizardLink = z.infer<typeof wizardLinkSchema>;

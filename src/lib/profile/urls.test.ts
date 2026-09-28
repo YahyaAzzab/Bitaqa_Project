@@ -17,9 +17,7 @@ describe('isSafeProfileUrl', () => {
 
 describe('buildSocialUrl', () => {
   it('reconstruit depuis un @pseudo', () => {
-    expect(buildSocialUrl('instagram', '@atelier.nour')).toBe(
-      'https://instagram.com/atelier.nour',
-    );
+    expect(buildSocialUrl('instagram', '@atelier.nour')).toBe('https://instagram.com/atelier.nour');
     expect(buildSocialUrl('tiktok', 'studiolina')).toBe('https://www.tiktok.com/@studiolina');
   });
 

@@ -45,8 +45,7 @@ export async function GET(request: Request) {
   const now = new Date();
   const toDate = parsed.data.to ?? now.toISOString().slice(0, 10);
   const fromDate =
-    parsed.data.from ??
-    new Date(now.getTime() - 30 * 86_400_000).toISOString().slice(0, 10);
+    parsed.data.from ?? new Date(now.getTime() - 30 * 86_400_000).toISOString().slice(0, 10);
 
   const fromIso = `${fromDate}T00:00:00.000Z`;
   const toIso = `${toDate}T23:59:59.999Z`;

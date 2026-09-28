@@ -34,7 +34,11 @@ export function ProfileLogoEditor({ profileId, businessName, logoUrl }: Props) {
 
   return (
     <section className="border-border bg-surface rounded-lg border p-4">
-      <LogoPicker logoUrl={current} businessName={businessName} onUploaded={(url) => void save(url)} />
+      <LogoPicker
+        logoUrl={current}
+        businessName={businessName}
+        onUploaded={(url) => void save(url)}
+      />
     </section>
   );
 }

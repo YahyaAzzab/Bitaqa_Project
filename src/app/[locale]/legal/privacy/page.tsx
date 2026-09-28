@@ -2,11 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import type { Locale } from '@/i18n/config';
 
-export default async function PrivacyPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
   const locale = raw as Locale;
   setRequestLocale(locale);

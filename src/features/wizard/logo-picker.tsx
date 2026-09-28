@@ -9,13 +9,16 @@ import { uploadLogo } from '@/features/wizard/actions';
 import { compressLogoImage, sampleAccentFromBlob } from '@/lib/profile/logo-image';
 import { cn } from '@/lib/utils';
 
+type UploadResult = { ok: true; data: { url: string } } | { ok: false; error: string };
+
 type Props = {
   logoUrl?: string | null;
   businessName: string;
   onUploaded: (url: string, accentHex?: string | null) => void;
+  upload?: (formData: FormData) => Promise<UploadResult>;
 };
 
-export function LogoPicker({ logoUrl, businessName, onUploaded }: Props) {
+export function LogoPicker({ logoUrl, businessName, onUploaded, upload = uploadLogo }: Props) {
   const t = useTranslations('dashboard.wizard');
   const { toast } = useToast();
   const galleryRef = useRef<HTMLInputElement>(null);
@@ -34,7 +37,7 @@ export function LogoPicker({ logoUrl, businessName, onUploaded }: Props) {
       const { blob, mime, ext } = await compressLogoImage(file);
       const fd = new FormData();
       fd.append('file', new File([blob], `logo.${ext}`, { type: mime }));
-      const res = await uploadLogo(fd);
+      const res = await upload(fd);
       if (!res.ok) {
         toast({
           title:

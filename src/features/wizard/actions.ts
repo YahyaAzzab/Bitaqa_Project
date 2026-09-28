@@ -3,19 +3,14 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { getSellerSession } from '@/lib/auth/session';
 import { normalizeMoroccanPhone } from '@/lib/phone';
-import {
-  isReservedSlug,
-  isValidSlug,
-} from '@/lib/profile/slug';
+import { isReservedSlug, isValidSlug } from '@/lib/profile/slug';
+import { buildLinksPayload, emptyToNull } from '@/lib/profile/links-payload';
 import { themeToDb } from '@/lib/profile/theme';
 import { wizardFormSchema, type WizardFormValues } from '@/lib/profile/schema';
-import { toWhatsAppHref } from '@/lib/profile/urls';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { Json } from '@/lib/supabase/database.types';
 
-export type ActionResult<T = undefined> =
-  | { ok: true; data: T }
-  | { ok: false; error: string };
+export type ActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };
 
 export async function checkSlugAvailable(
   slug: string,
@@ -37,65 +32,6 @@ export async function checkSlugAvailable(
 
   if (error) return { ok: false, error: 'generic' };
   return { ok: true, data: { available: !data } };
-}
-
-function emptyToNull(v: string | undefined | null): string | null {
-  const t = v?.trim();
-  return t ? t : null;
-}
-
-function buildLinksPayload(values: WizardFormValues): Json {
-  const links: Array<{
-    type: string;
-    label_fr: string | null;
-    label_ar: string | null;
-    value: string;
-  }> = [];
-
-  const phone = normalizeMoroccanPhone(values.phone);
-  if (phone) {
-    links.push({ type: 'phone', label_fr: null, label_ar: null, value: phone });
-  }
-
-  const waRaw = values.whatsappSame ? values.phone : values.whatsapp;
-  const wa = waRaw ? normalizeMoroccanPhone(waRaw) : null;
-  if (wa) {
-    links.push({
-      type: 'whatsapp',
-      label_fr: null,
-      label_ar: null,
-      value: toWhatsAppHref(wa),
-    });
-  }
-
-  if (values.email?.trim()) {
-    links.push({
-      type: 'email',
-      label_fr: null,
-      label_ar: null,
-      value: values.email.trim(),
-    });
-  }
-
-  if (values.mapsUrl?.trim()) {
-    links.push({
-      type: 'maps',
-      label_fr: null,
-      label_ar: null,
-      value: values.mapsUrl.trim(),
-    });
-  }
-
-  for (const link of values.links) {
-    links.push({
-      type: link.type,
-      label_fr: emptyToNull(link.labelFr),
-      label_ar: emptyToNull(link.labelAr),
-      value: link.value.trim(),
-    });
-  }
-
-  return links;
 }
 
 export async function createProfile(
@@ -154,9 +90,7 @@ export async function createProfile(
   return { ok: true, data: { id: profileId, slug: values.slug } };
 }
 
-export async function uploadLogo(
-  formData: FormData,
-): Promise<ActionResult<{ url: string }>> {
+export async function uploadLogo(formData: FormData): Promise<ActionResult<{ url: string }>> {
   const session = await getSellerSession();
   if (!session) return { ok: false, error: 'unauthorized' };
 
@@ -173,8 +107,7 @@ export async function uploadLogo(
     return { ok: false, error: 'file_type' };
   }
 
-  const ext =
-    type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : 'jpg';
+  const ext = type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : 'jpg';
   const path = `${session.userId}/${crypto.randomUUID()}.${ext}`;
 
   const supabase = await createServerSupabaseClient();

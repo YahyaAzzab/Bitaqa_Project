@@ -78,7 +78,7 @@ export function ProfileLinkRow({ type, href, label }: Props) {
       rel={external ? 'noopener noreferrer' : undefined}
       className={cn(
         'group pressable focus-ring flex min-h-16 items-center gap-3 px-4 py-3',
-        'transition-colors duration-[150ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-surface-raised/60',
+        'hover:bg-surface-raised/60 transition-colors duration-[150ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
       )}
     >
       <span className="border-border bg-bg text-accent flex size-10 shrink-0 items-center justify-center rounded-md border">

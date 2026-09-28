@@ -5,11 +5,7 @@ import type { Locale } from '@/i18n/config';
 import { getSellerSession } from '@/lib/auth/session';
 import { cn } from '@/lib/utils';
 
-export default async function SettingsPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function SettingsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
   const locale = raw as Locale;
   setRequestLocale(locale);

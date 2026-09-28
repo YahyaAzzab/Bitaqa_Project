@@ -63,8 +63,5 @@ export async function GET() {
     ];
   });
 
-  return NextResponse.json(
-    { orders },
-    { headers: { 'Cache-Control': 'private, max-age=15' } },
-  );
+  return NextResponse.json({ orders }, { headers: { 'Cache-Control': 'private, max-age=15' } });
 }

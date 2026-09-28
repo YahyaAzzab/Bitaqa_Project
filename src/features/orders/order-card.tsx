@@ -99,9 +99,7 @@ export function OrderCard({ order, locale, profileUrl }: Props) {
             /{order.profile.slug}
           </p>
         </div>
-        <Badge tone={order.status === 'ready' ? 'warning' : 'muted'}>
-          {t(order.status)}
-        </Badge>
+        <Badge tone={order.status === 'ready' ? 'warning' : 'muted'}>{t(order.status)}</Badge>
       </div>
 
       {order.design_notes ? (
@@ -148,7 +146,7 @@ export function OrderCard({ order, locale, profileUrl }: Props) {
             onClick={() => void copyLink()}
           >
             {copied ? (
-              <Check className="size-4 text-success" strokeWidth={1.75} />
+              <Check className="text-success size-4" strokeWidth={1.75} />
             ) : (
               <Copy className="size-4" strokeWidth={1.75} />
             )}

@@ -78,7 +78,7 @@ export function ReadyScreen({ slug, businessName, phone, profileUrl }: Props) {
 
       <div className="border-border bg-surface rounded-lg border p-4">
         <p className="text-text-muted text-[11px] tracking-wide uppercase">URL</p>
-        <p className="mt-2 break-all text-[17px] font-medium leading-snug" dir="ltr">
+        <p className="mt-2 text-[17px] leading-snug font-medium break-all" dir="ltr">
           {profileUrl}
         </p>
         <Button className="mt-4 w-full" onClick={() => void copy()}>
@@ -109,7 +109,7 @@ export function ReadyScreen({ slug, businessName, phone, profileUrl }: Props) {
                   type="button"
                   onClick={() => setChecked((c) => ({ ...c, [key]: !c[key] }))}
                   className={cn(
-                    'border-border bg-surface pressable focus-ring flex w-full min-h-12 items-center gap-3 rounded-md border px-3 text-start text-[14px]',
+                    'border-border bg-surface pressable focus-ring flex min-h-12 w-full items-center gap-3 rounded-md border px-3 text-start text-[14px]',
                     on && 'border-accent/50',
                   )}
                 >
@@ -156,7 +156,12 @@ export function ReadyScreen({ slug, businessName, phone, profileUrl }: Props) {
         </Link>
       </div>
 
-      <Sheet open={qrOpen} onClose={() => setQrOpen(false)} title={t('qr')} closeLabel={tProfile('close')}>
+      <Sheet
+        open={qrOpen}
+        onClose={() => setQrOpen(false)}
+        title={t('qr')}
+        closeLabel={tProfile('close')}
+      >
         <div className="flex flex-col items-center gap-3 py-2">
           {qrDataUrl ? (
             // eslint-disable-next-line @next/next/no-img-element

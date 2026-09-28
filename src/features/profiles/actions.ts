@@ -9,9 +9,7 @@ import { THEME_IDS } from '@/lib/profile/themes';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/database.types';
 
-export type ProfileActionResult =
-  | { ok: true }
-  | { ok: false; error: string };
+export type ProfileActionResult = { ok: true } | { ok: false; error: string };
 
 const renewSchema = z.object({
   profileId: z.string().uuid(),
@@ -25,7 +23,13 @@ const updateSchema = z.object({
   taglineFr: z.string().trim().max(120).nullable().optional(),
   taglineAr: z.string().trim().max(120).nullable().optional(),
   phone: z.string().trim().max(20).nullable().optional(),
-  email: z.string().trim().email().nullable().optional().or(z.literal('').transform(() => null)),
+  email: z
+    .string()
+    .trim()
+    .email()
+    .nullable()
+    .optional()
+    .or(z.literal('').transform(() => null)),
   addressFr: z.string().trim().max(200).nullable().optional(),
   accentColor: z
     .string()
@@ -35,7 +39,9 @@ const updateSchema = z.object({
   logoUrl: z
     .string()
     .url()
-    .refine((url) => url.startsWith(`${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/`))
+    .refine((url) =>
+      url.startsWith(`${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/`),
+    )
     .nullable()
     .optional(),
 });

@@ -1,11 +1,9 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { ArrowUpRight, Phone, Radio } from 'lucide-react';
+import { ArrowUpRight, Phone, Radio, UserRound } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
+import { TEAM_PHONES } from '@/lib/contact';
 
-const PHONES = [
-  { display: '06 81 72 52 42', href: 'tel:+212681725242' },
-  { display: '06 42 91 60 60', href: 'tel:+212642916060' },
-] as const;
+const PHONES = TEAM_PHONES;
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -33,6 +31,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <Phone className="size-4" strokeWidth={1.75} aria-hidden />
               {PHONES[0].display}
             </a>
+            <Link
+              href="/account"
+              className="pressable focus-ring border-border text-text-secondary hover:border-accent hover:text-accent inline-flex min-h-11 items-center gap-2 rounded-md border px-3 text-[13px] font-medium"
+            >
+              <UserRound className="size-4" strokeWidth={1.75} aria-hidden />
+              {t('clientSpace')}
+            </Link>
             <Link
               href="/"
               locale={locale === 'fr' ? 'ar' : 'fr'}
@@ -107,7 +112,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
             <dl className="border-border mt-10 grid max-w-lg grid-cols-3 gap-4 border-t pt-5">
               <div>
-                <dt className="text-[color:var(--ivory)] text-lg font-semibold tracking-tight sm:text-xl">
+                <dt className="text-lg font-semibold tracking-tight text-[color:var(--ivory)] sm:text-xl">
                   {t('statOne')}
                 </dt>
                 <dd className="text-text-muted mt-1 text-[11px] leading-snug sm:text-xs">
@@ -115,7 +120,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 </dd>
               </div>
               <div>
-                <dt className="text-[color:var(--ivory)] text-lg font-semibold tracking-tight sm:text-xl">
+                <dt className="text-lg font-semibold tracking-tight text-[color:var(--ivory)] sm:text-xl">
                   {t('statTwo')}
                 </dt>
                 <dd className="text-text-muted mt-1 text-[11px] leading-snug sm:text-xs">
@@ -123,7 +128,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 </dd>
               </div>
               <div>
-                <dt className="text-[color:var(--ivory)] text-lg font-semibold tracking-tight sm:text-xl">
+                <dt className="text-lg font-semibold tracking-tight text-[color:var(--ivory)] sm:text-xl">
                   {t('statThree')}
                 </dt>
                 <dd className="text-text-muted mt-1 text-[11px] leading-snug sm:text-xs">
@@ -147,7 +152,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 </div>
                 <div className="relative z-[1] mt-auto">
                   <div className="bg-accent mb-7 h-px w-12 opacity-80" />
-                  <p className="text-[color:var(--ivory)] text-[1.65rem] leading-tight font-semibold tracking-tight">
+                  <p className="text-[1.65rem] leading-tight font-semibold tracking-tight text-[color:var(--ivory)]">
                     {t('cardName')}
                   </p>
                   <p className="text-text-muted mt-2 text-[13px]">{t('cardRole')}</p>
@@ -177,7 +182,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 key={phone.href}
                 href={phone.href}
                 dir="ltr"
-                className="hover:text-accent focus-ring rounded-sm tabular tracking-wide transition-colors"
+                className="hover:text-accent focus-ring tabular rounded-sm tracking-wide transition-colors"
               >
                 {phone.display}
               </a>

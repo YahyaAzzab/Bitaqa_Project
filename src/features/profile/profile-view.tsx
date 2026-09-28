@@ -84,13 +84,30 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
 
   const actions: DockAction[] = [];
   if (data.phone) {
-    actions.push({ key: 'call', href: toTelHref(data.phone), label: t('call'), icon: Phone, primary: true });
+    actions.push({
+      key: 'call',
+      href: toTelHref(data.phone),
+      label: t('call'),
+      icon: Phone,
+      primary: true,
+    });
   }
   if (!expired && whatsappLink) {
-    actions.push({ key: 'wa', href: whatsappLink, label: t('whatsapp'), icon: MessageCircle, external: true });
+    actions.push({
+      key: 'wa',
+      href: whatsappLink,
+      label: t('whatsapp'),
+      icon: MessageCircle,
+      external: true,
+    });
   }
   if (!expired && data.slug) {
-    actions.push({ key: 'vcard', href: `/api/vcard/${data.slug}`, label: t('saveShort'), icon: BookmarkPlus });
+    actions.push({
+      key: 'vcard',
+      href: `/api/vcard/${data.slug}`,
+      label: t('saveShort'),
+      icon: BookmarkPlus,
+    });
   }
 
   const otherLocale = locale === 'fr' ? 'ar' : 'fr';
@@ -104,7 +121,10 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
         style={accentStyle(data.accentColor)}
         className={cn('bg-bg text-text relative isolate', !preview && 'min-h-dvh')}
       >
-        <div aria-hidden className="profile-halo pointer-events-none absolute inset-x-0 top-0 -z-10 h-80" />
+        <div
+          aria-hidden
+          className="profile-halo pointer-events-none absolute inset-x-0 top-0 -z-10 h-80"
+        />
 
         <div
           className={cn(
@@ -201,7 +221,10 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
                 animate="show"
               >
                 {links.map((link, index) => (
-                  <m.li key={`${link.type}-${link.value}-${index}`} variants={variantsFor(reduced, fadeUp)}>
+                  <m.li
+                    key={`${link.type}-${link.value}-${index}`}
+                    variants={variantsFor(reduced, fadeUp)}
+                  >
                     <ProfileLinkRow
                       type={link.type}
                       href={link.value}
@@ -229,7 +252,9 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
                   aria-hidden
                   className="profile-mini-card flex h-11 w-[70px] shrink-0 items-end justify-between rounded-[6px] p-1.5"
                 >
-                  <span className="text-[7px] leading-none font-semibold tracking-[0.2em]">BITAQA</span>
+                  <span className="text-[7px] leading-none font-semibold tracking-[0.2em]">
+                    BITAQA
+                  </span>
                   <Nfc className="size-3.5" strokeWidth={1.75} />
                 </span>
                 <span className="min-w-0 flex-1">

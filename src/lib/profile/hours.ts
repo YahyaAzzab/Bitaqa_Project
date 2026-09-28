@@ -65,7 +65,10 @@ export function parseHoursJson(raw: unknown): WeeklyHours | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const out: WeeklyHours = {};
   for (const key of Object.keys(raw) as DayKey[]) {
-    if (!DAY_KEYS.includes(key) && !['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].includes(key)) {
+    if (
+      !DAY_KEYS.includes(key) &&
+      !['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].includes(key)
+    ) {
       continue;
     }
     const value = (raw as Record<string, unknown>)[key];

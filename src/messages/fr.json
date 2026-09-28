@@ -25,7 +25,8 @@
     "cardNoteOne": "Profil modifiable",
     "cardNoteTwo": "Sans application",
     "footer": "Une présence professionnelle, sans papier superflu.",
-    "footerDetail": "NFC · Maroc"
+    "footerDetail": "NFC · Maroc",
+    "clientSpace": "Mon espace"
   },
   "common": {
     "loading": "Chargement…",
@@ -314,6 +315,35 @@
       "receipt": "Reçu PDF",
       "new": "Nouveau profil",
       "scanReminder": "Scannez la carte avec votre téléphone avant de la remettre."
+    },
+    "owner": {
+      "title": "Espace client",
+      "hint": "Donnez au commerçant la main sur sa page : liens, horaires, logo, couleurs. Il se connecte avec un lien envoyé sur WhatsApp.",
+      "activeHint": "Ce commerçant modifie sa page lui-même avec ce compte.",
+      "emailLabel": "E-mail du commerçant",
+      "invite": "Créer l’accès",
+      "linkReady": "Lien de connexion prêt. Envoyez-le au commerçant : il ouvre directement son espace.",
+      "linkExpiry": "Valable une seule fois et pour une durée limitée. Générez-en un nouveau si besoin.",
+      "copy": "Copier",
+      "copied": "Copié",
+      "copyFailed": "Impossible de copier le lien",
+      "sendWhatsapp": "WhatsApp",
+      "whatsappMessage": "Bonjour, voici votre accès à l’espace Bitaqa de {name}. Vous pourrez y modifier votre page quand vous voulez : {link}",
+      "newLink": "Nouveau lien",
+      "revoke": "Retirer l’accès",
+      "revokeTitle": "Retirer l’accès ?",
+      "revokeBody": "Le commerçant ne pourra plus modifier sa page. Sa carte et son profil public restent en ligne.",
+      "revoked": "Accès retiré",
+      "cancel": "Annuler",
+      "errors": {
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "not_found": "Profil introuvable ou géré par un autre vendeur.",
+        "rate_limited": "Trop de liens générés. Réessayez dans un moment.",
+        "email_invalid": "Adresse e-mail invalide.",
+        "email_is_seller": "Cette adresse appartient à un vendeur Bitaqa.",
+        "invalid": "Demande invalide.",
+        "generic": "L’accès n’a pas pu être créé. Réessayez."
+      }
     }
   },
   "profile": {
@@ -369,5 +399,162 @@
     "privacy": "Confidentialité",
     "mentionsBody": "Bitaqa est une plateforme de cartes NFC destinée aux commerçants au Maroc. Contact : hello@bitaqa.ma",
     "privacyBody": "Nous collectons uniquement les données nécessaires à la vente et à l’affichage des profils. Les scans sont agrégés sans identifier les visiteurs."
+  },
+  "account": {
+    "eyebrow": "Mon espace",
+    "open": "Voir ma page",
+    "live": "Votre page est en ligne",
+    "paused": "Modifications en pause",
+    "copy": "Copier le lien",
+    "copied": "Lien copié",
+    "copyFailed": "Impossible de copier le lien",
+    "share": "Partager",
+    "tabsLabel": "Sections de l’éditeur",
+    "tabs": {
+      "links": "Liens",
+      "profile": "Infos",
+      "design": "Style",
+      "stats": "Scans"
+    },
+    "preview": "Aperçu",
+    "unsaved": "Modifications non enregistrées",
+    "discard": "Annuler",
+    "save": "Enregistrer",
+    "saved": "C’est en ligne",
+    "savedHint": "Votre page est à jour pour tous ceux qui scannent votre carte.",
+    "suspendedTitle": "Page suspendue",
+    "suspendedBody": "Votre page est en pause. Appelez-nous pour la réactiver.",
+    "expiredTitle": "Abonnement à renouveler",
+    "expiredBody": "Votre abonnement a pris fin le {date}. Vos clients voient encore votre nom et votre numéro ; renouvelez pour retrouver toute votre page.",
+    "noCardTitle": "Aucune carte liée à ce compte",
+    "noCardBody": "Votre conseiller Bitaqa doit associer votre carte à cette adresse. Un appel suffit.",
+    "errors": {
+      "field": "Vérifiez ce champ.",
+      "phone_invalid": "Numéro marocain invalide (ex. 06 12 34 56 78).",
+      "whatsapp_invalid": "Numéro WhatsApp invalide.",
+      "email_invalid": "Adresse e-mail invalide.",
+      "url_unsafe": "Lien invalide : il doit commencer par https://",
+      "hours_invalid": "Horaires incohérents : l’ouverture doit précéder la fermeture.",
+      "offline": "Pas de connexion. Vos modifications restent ici, réessayez dès que le réseau revient.",
+      "forbidden": "Cette page n’est pas liée à votre compte.",
+      "profile_inactive": "Votre abonnement doit être renouvelé pour modifier la page.",
+      "rate_limited": "Beaucoup d’enregistrements d’un coup. Patientez une minute.",
+      "save": "L’enregistrement a échoué. Réessayez.",
+      "check": "Quelques champs sont à corriger."
+    },
+    "login": {
+      "eyebrow": "Bitaqa · Espace client",
+      "title": "Votre page, à jour en un instant",
+      "lede": "Liens, horaires, logo : tout ce que vos clients voient en scannant votre carte.",
+      "modeLabel": "Mode de connexion",
+      "modePassword": "Mot de passe",
+      "modeLink": "Lien par e-mail",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "showPassword": "Afficher le mot de passe",
+      "hidePassword": "Masquer le mot de passe",
+      "forgot": "Mot de passe oublié ? Demandez un lien par e-mail, ou un nouveau lien à votre conseiller.",
+      "submit": "Se connecter",
+      "sendLink": "Recevoir un lien",
+      "linkHint": "L’adresse donnée à votre conseiller Bitaqa.",
+      "sentTitle": "Vérifiez votre boîte mail",
+      "sentBody": "Si cette adresse a un espace Bitaqa, un lien de connexion vient de partir. Pensez aux spams.",
+      "noAccount": "Pas encore de carte ou besoin d’aide ?",
+      "sellerLink": "Vous êtes vendeur Bitaqa ?",
+      "errors": {
+        "invalid": "E-mail ou mot de passe incorrect.",
+        "no_profile": "Aucune carte n’est liée à ce compte. Contactez votre conseiller.",
+        "rate_limited": "Trop de tentatives. Réessayez dans quelques minutes.",
+        "link": "Ce lien a expiré ou a déjà servi. Demandez-en un nouveau.",
+        "generic": "Connexion impossible pour le moment. Réessayez."
+      }
+    },
+    "password": {
+      "label": "Nouveau mot de passe",
+      "hint": "8 caractères minimum.",
+      "show": "Afficher",
+      "hide": "Masquer",
+      "saved": "Mot de passe enregistré",
+      "promptTitle": "Choisissez votre mot de passe",
+      "promptBody": "Pour revenir plus tard sans attendre un nouveau lien.",
+      "create": "Enregistrer le mot de passe",
+      "errors": {
+        "password_short": "8 caractères minimum.",
+        "password_same": "C’est déjà votre mot de passe actuel.",
+        "unauthorized": "Session expirée. Reconnectez-vous.",
+        "generic": "Le mot de passe n’a pas pu être enregistré."
+      }
+    },
+    "settings": {
+      "title": "Réglages",
+      "close": "Fermer",
+      "cards": "Mes cartes",
+      "account": "Compte",
+      "changePassword": "Changer le mot de passe",
+      "createPassword": "Créer le mot de passe",
+      "language": "Langue",
+      "help": "Besoin d’aide ?",
+      "helpBody": "Renouvellement, nouvelle carte, question : l’équipe Bitaqa répond au téléphone.",
+      "signOut": "Se déconnecter"
+    },
+    "links": {
+      "add": "Ajouter un lien",
+      "hint": "Maintenez la poignée pour changer l’ordre.",
+      "full": "Maximum {max} liens. Retirez-en un pour en ajouter.",
+      "emptyTitle": "Aucun lien pour l’instant",
+      "emptyBody": "Instagram, site, menu, catalogue : ajoutez ce que vos clients cherchent.",
+      "reorder": "Déplacer « {name} »",
+      "edit": "Modifier « {name} »",
+      "titleFr": "Titre affiché",
+      "titleAr": "Titre en arabe",
+      "url": "Lien",
+      "urlInvalid": "Lien invalide : il doit commencer par https://",
+      "remove": "Retirer",
+      "done": "Terminé",
+      "addTitle": "Ajouter un lien",
+      "addConfirm": "Ajouter",
+      "cancel": "Annuler",
+      "typeLabel": "Type de lien",
+      "handleLabel": "Pseudo ou lien du profil",
+      "titleOptional": "Titre (facultatif)"
+    },
+    "profile": {
+      "identity": "Identité",
+      "nameFr": "Nom du commerce",
+      "nameAr": "Nom en arabe",
+      "taglineFr": "Accroche",
+      "taglineHint": "Une phrase qui dit ce que vous faites.",
+      "taglineAr": "Accroche en arabe",
+      "contact": "Contact",
+      "contactHint": "Utilisé pour les boutons Appeler et WhatsApp.",
+      "phone": "Téléphone",
+      "whatsappSame": "Même numéro pour WhatsApp",
+      "whatsapp": "Numéro WhatsApp",
+      "email": "E-mail (facultatif)",
+      "address": "Adresse (facultatif)",
+      "maps": "Lien Google Maps (facultatif)",
+      "mapsHint": "Collez le lien « Partager » de Google Maps."
+    },
+    "design": {
+      "themeHint": "Le thème s’applique à toute votre page. Changez-le quand vous voulez.",
+      "accentSaved": "Actuelle"
+    },
+    "stats": {
+      "last7": "7 derniers jours",
+      "last30": "30 derniers jours",
+      "chart": "Scans par jour",
+      "daysAgo": "Il y a {count} jours",
+      "today": "Aujourd’hui",
+      "countries": "Pays",
+      "devices": "Appareils",
+      "unknown": "Inconnu",
+      "device": {
+        "mobile": "Téléphone",
+        "tablet": "Tablette",
+        "desktop": "Ordinateur"
+      },
+      "emptyTitle": "Pas encore de scan",
+      "emptyBody": "Chaque fois qu’un client approche son téléphone de votre carte, ça s’affiche ici."
+    }
   }
 }

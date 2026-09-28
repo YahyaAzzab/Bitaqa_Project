@@ -14,7 +14,11 @@ export function ThemePicker({ value, onChange }: Props) {
   const t = useTranslations('dashboard.wizard');
 
   return (
-    <div role="radiogroup" aria-label={t('theme')} className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <div
+      role="radiogroup"
+      aria-label={t('theme')}
+      className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+    >
       {PROFILE_THEMES.map((theme) => {
         const selected = theme.id === value;
         return (
@@ -26,7 +30,9 @@ export function ThemePicker({ value, onChange }: Props) {
             onClick={() => onChange(theme)}
             className={cn(
               'pressable focus-ring rounded-lg p-1 text-start transition-colors duration-[150ms]',
-              selected ? 'bg-accent/10 ring-accent ring-2' : 'ring-border hover:ring-accent/40 ring-1',
+              selected
+                ? 'bg-accent/10 ring-accent ring-2'
+                : 'ring-border hover:ring-accent/40 ring-1',
             )}
           >
             {/* Rendered inside the theme itself so the swatch is the real palette. */}
@@ -70,7 +76,13 @@ type AccentChoicesProps = {
   onChange: (hex: string) => void;
 };
 
-export function AccentChoices({ label, customLabel, value, swatches, onChange }: AccentChoicesProps) {
+export function AccentChoices({
+  label,
+  customLabel,
+  value,
+  swatches,
+  onChange,
+}: AccentChoicesProps) {
   const unique = swatches.filter(
     (swatch, index) =>
       swatches.findIndex((other) => other.hex.toLowerCase() === swatch.hex.toLowerCase()) === index,
@@ -82,7 +94,11 @@ export function AccentChoices({ label, customLabel, value, swatches, onChange }:
       <p id="accent-label" className="text-text-secondary mb-2 text-[13px] font-medium">
         {label}
       </p>
-      <div role="radiogroup" aria-labelledby="accent-label" className="flex flex-wrap items-center gap-2">
+      <div
+        role="radiogroup"
+        aria-labelledby="accent-label"
+        className="flex flex-wrap items-center gap-2"
+      >
         {unique.map((swatch) => {
           const selected = swatch.hex.toLowerCase() === value.toLowerCase();
           return (
@@ -117,7 +133,9 @@ export function AccentChoices({ label, customLabel, value, swatches, onChange }:
             style={isCustom ? { backgroundColor: value } : undefined}
             aria-hidden
           >
-            {isCustom ? null : <Pipette className="text-text-secondary size-4" strokeWidth={1.75} />}
+            {isCustom ? null : (
+              <Pipette className="text-text-secondary size-4" strokeWidth={1.75} />
+            )}
           </span>
           {customLabel}
           <input

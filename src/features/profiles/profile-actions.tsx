@@ -21,22 +21,14 @@ type Props = {
   publicUrl: string;
 };
 
-export function ProfileActions({
-  profileId,
-  slug,
-  planCode,
-  isAdmin,
-  locale,
-  publicUrl,
-}: Props) {
+export function ProfileActions({ profileId, slug, planCode, isAdmin, locale, publicUrl }: Props) {
   const t = useTranslations('dashboard.profiles');
   const tProfile = useTranslations('profile');
   const { toast } = useToast();
   const router = useRouter();
   const [renewOpen, setRenewOpen] = useState(false);
   const [suspendOpen, setSuspendOpen] = useState(false);
-  const renewalDefault =
-    planCode === 'signature' ? PLAN_PRICES.signature : PLAN_PRICES.essentiel;
+  const renewalDefault = planCode === 'signature' ? PLAN_PRICES.signature : PLAN_PRICES.essentiel;
   const [amount, setAmount] = useState<number>(renewalDefault);
   const [pending, start] = useTransition();
 
@@ -71,7 +63,7 @@ export function ProfileActions({
         href={publicUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="pressable focus-ring border-border bg-surface inline-flex w-full min-h-12 items-center justify-center gap-2 rounded-md border px-4 text-[15px] font-medium"
+        className="pressable focus-ring border-border bg-surface inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md border px-4 text-[15px] font-medium"
       >
         <ExternalLink className="size-4" strokeWidth={1.75} />
         {t('open')}

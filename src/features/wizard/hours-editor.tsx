@@ -21,7 +21,10 @@ const PRESETS = {
 
 type PresetKey = keyof typeof PRESETS;
 
-const PRESET_LABELS: Record<PresetKey, 'hoursPresetWeekdays' | 'hoursPresetMonSat' | 'hoursPresetEveryday'> = {
+const PRESET_LABELS: Record<
+  PresetKey,
+  'hoursPresetWeekdays' | 'hoursPresetMonSat' | 'hoursPresetEveryday'
+> = {
   weekdays: 'hoursPresetWeekdays',
   monSat: 'hoursPresetMonSat',
   everyday: 'hoursPresetEveryday',
@@ -39,8 +42,15 @@ function cloneSlots(slots: readonly Slot[]): Slot[] {
 }
 
 function withBreak([start, end]: Slot): Slot[] {
-  if (start < '13:00' && end > '15:00') return [[start, '13:00'], ['15:00', end]];
-  return [[start, end], [end < '20:00' ? '20:00' : end, '23:00']];
+  if (start < '13:00' && end > '15:00')
+    return [
+      [start, '13:00'],
+      ['15:00', end],
+    ];
+  return [
+    [start, end],
+    [end < '20:00' ? '20:00' : end, '23:00'],
+  ];
 }
 
 export function HoursEditor({ value, onChange }: Props) {

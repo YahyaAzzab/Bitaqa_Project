@@ -16,6 +16,8 @@ type PageProps = {
 };
 
 const RESERVED = new Set([
+  'account',
+  'auth',
   'login',
   'dashboard',
   'design',
@@ -123,7 +125,5 @@ export default async function PublicProfilePage({ params }: PageProps) {
   const profileUrl = publicProfileUrl(locale, slug);
   const data = toPreview(profile);
 
-  return (
-    <ProfileView data={data} profileUrl={profileUrl} locale={locale} />
-  );
+  return <ProfileView data={data} profileUrl={profileUrl} locale={locale} />;
 }

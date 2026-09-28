@@ -7,7 +7,12 @@ import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 
 const TABS: Array<{
-  href: '/dashboard' | '/dashboard/profiles' | '/dashboard/new' | '/dashboard/cash' | '/dashboard/orders';
+  href:
+    | '/dashboard'
+    | '/dashboard/profiles'
+    | '/dashboard/new'
+    | '/dashboard/cash'
+    | '/dashboard/orders';
   key: 'home' | 'profiles' | 'new' | 'cash' | 'orders';
   icon: typeof Home;
   exact?: boolean;

@@ -1,13 +1,15 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import createIntlMiddleware from 'next-intl/middleware';
 import { routing } from '@/i18n/routing';
-import { encodeSellerProfile } from '@/lib/auth/seller-cookie';
-import { isDashboardPath, isLoginPath, splitLocalePath } from '@/lib/auth/paths';
+import { decodeSellerProfile, encodeSellerProfile } from '@/lib/auth/seller-cookie';
 import {
-  copyCookies,
-  hasSupabaseAuthCookie,
-  updateSession,
-} from '@/lib/supabase/middleware';
+  isAccountLoginPath,
+  isAccountPath,
+  isDashboardPath,
+  isLoginPath,
+  splitLocalePath,
+} from '@/lib/auth/paths';
+import { copyCookies, hasSupabaseAuthCookie, updateSession } from '@/lib/supabase/middleware';
 
 const intlMiddleware = createIntlMiddleware(routing);
 
@@ -25,16 +27,41 @@ function cookieOpts(maxAge: number) {
   };
 }
 
-function setSellerCookies(
+async function setSellerCookies(
   response: NextResponse,
   seller: { id: string; full_name: string; role: string; created_at: string },
 ) {
   response.cookies.set(SELLER_COOKIE, seller.id, cookieOpts(SELLER_COOKIE_MAX_AGE));
   response.cookies.set(
     SELLER_PROFILE_COOKIE,
-    encodeSellerProfile(seller),
+    await encodeSellerProfile(seller),
     cookieOpts(SELLER_COOKIE_MAX_AGE),
   );
+}
+
+async function hasValidSellerCookies(sellerId: string | undefined, profile: string | undefined) {
+  if (!sellerId || !profile) return false;
+  const decoded = await decodeSellerProfile(profile);
+  return decoded?.id === sellerId;
+}
+
+async function handleAccount(request: NextRequest, intlResponse: NextResponse, locale: string) {
+  const { path } = splitLocalePath(request.nextUrl.pathname);
+  const loginPage = isAccountLoginPath(path);
+  const hasAuth = hasSupabaseAuthCookie(request);
+
+  if (!hasAuth) {
+    if (loginPage) return intlResponse;
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/account/login`;
+    url.search = '';
+    url.searchParams.set('next', request.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+
+  // Rafraîchit le jeton ; la page vérifie elle-même la propriété du profil.
+  const { response } = await updateSession(request, intlResponse, { remote: true });
+  return response;
 }
 
 export function clearSellerCookie(response: NextResponse) {
@@ -52,13 +79,17 @@ export default async function middleware(request: NextRequest) {
   const profileCookie = request.cookies.get(SELLER_PROFILE_COOKIE)?.value;
   const hasAuth = hasSupabaseAuthCookie(request);
 
+  if (isAccountPath(path)) {
+    return handleAccount(request, intlResponse, locale);
+  }
+
   // Pages publiques : i18n seul, zéro Supabase.
   if (!dashboard && !login) {
     return intlResponse;
   }
 
-  // Dashboard chaud : les 3 cookies présents → aucune I/O.
-  if (dashboard && sellerCookie && profileCookie && hasAuth) {
+  // Dashboard chaud : cookie vendeur signé + session → aucune I/O réseau.
+  if (dashboard && hasAuth && (await hasValidSellerCookies(sellerCookie, profileCookie))) {
     return intlResponse;
   }
 
@@ -110,7 +141,7 @@ export default async function middleware(request: NextRequest) {
       return redirectResponse;
     }
 
-    setSellerCookies(response, seller);
+    await setSellerCookies(response, seller);
     return response;
   }
 
@@ -127,7 +158,7 @@ export default async function middleware(request: NextRequest) {
       url.search = '';
       const redirectResponse = NextResponse.redirect(url);
       copyCookies(response, redirectResponse);
-      setSellerCookies(redirectResponse, seller);
+      await setSellerCookies(redirectResponse, seller);
       return redirectResponse;
     }
   }

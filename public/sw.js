@@ -4,15 +4,19 @@ const PRECACHE = ['/fr/dashboard', '/ar/dashboard', '/icons/icon.svg', '/manifes
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting()),
+    caches
+      .open(CACHE)
+      .then((cache) => cache.addAll(PRECACHE))
+      .then(() => self.skipWaiting()),
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
-    ).then(() => self.clients.claim()),
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim()),
   );
 });
 
@@ -27,7 +31,10 @@ self.addEventListener('fetch', (event) => {
     caches.match(request).then((cached) => {
       const network = fetch(request)
         .then((response) => {
-          if (response.ok && (url.pathname.startsWith('/_next/static') || url.pathname.startsWith('/icons'))) {
+          if (
+            response.ok &&
+            (url.pathname.startsWith('/_next/static') || url.pathname.startsWith('/icons'))
+          ) {
             const clone = response.clone();
             void caches.open(CACHE).then((cache) => cache.put(request, clone));
           }

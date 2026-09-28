@@ -40,9 +40,7 @@ export async function POST(request: Request) {
     'unknown';
   const ua = request.headers.get('user-agent') || 'unknown';
   const country =
-    request.headers.get('x-vercel-ip-country') ||
-    request.headers.get('cf-ipcountry') ||
-    null;
+    request.headers.get('x-vercel-ip-country') || request.headers.get('cf-ipcountry') || null;
 
   const rl = rateLimit(`scan:${ip}`, { limit: 40, windowMs: 60_000 });
   if (!rl.ok) {

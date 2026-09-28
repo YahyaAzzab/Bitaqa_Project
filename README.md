@@ -13,8 +13,11 @@ Renseignez les clés Supabase dans `.env.local`, puis appliquez **dans l’ordre
 
 1. `supabase/migrations/20240921120000_init.sql`
 2. `supabase/migrations/20240922120000_rpcs.sql`
+3. `supabase/migrations/20260928120000_client_accounts.sql`
 
 (SQL Editor Supabase ou CLI).
+
+Dans Supabase › Authentication › URL Configuration : Site URL = `NEXT_PUBLIC_SITE_URL`, et ajoutez `{NEXT_PUBLIC_SITE_URL}/api/auth/confirm` aux Redirect URLs (liens de connexion des clients).
 
 ```bash
 npm run dev
@@ -28,9 +31,16 @@ npm run dev
 - `/fr/dashboard/ready/{slug}` — lien NFC + reçu PDF
 - `/fr/{slug}` — profil public (ce que le client scanne)
 
+## Espace client
+
+- `/fr/account/login` — connexion du commerçant (mot de passe ou lien par e-mail)
+- `/fr/account` — édition de sa page : liens (glisser pour réordonner), infos, horaires, thème, statistiques, aperçu en direct
+
+Le vendeur ouvre l’accès depuis la fiche profil (carte « Espace client ») : il saisit l’e-mail du client et lui envoie le lien de connexion unique par WhatsApp. Le client ne peut jamais modifier le lien, le plan, le statut ni l’expiration (RPC `owner_update_profile`).
+
 ## Variables d’environnement
 
-Voir `.env.example` : URL et clé anon publiques, `SUPABASE_SERVICE_ROLE_KEY` côté serveur uniquement, `NEXT_PUBLIC_SITE_URL`.
+Voir `.env.example` : URL et clé anon publiques, `SUPABASE_SERVICE_ROLE_KEY` côté serveur uniquement, `NEXT_PUBLIC_SITE_URL`, et `SELLER_COOKIE_SECRET` (optionnel, signe le cookie de rôle vendeur ; à défaut la clé service role est utilisée).
 
 ## Comptes vendeurs
 

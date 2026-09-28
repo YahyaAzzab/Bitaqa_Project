@@ -21,9 +21,7 @@ function mergeDraft(raw: unknown): WizardDraft | null {
   const values: WizardFormValues = {
     ...wizardDefaults,
     ...stored,
-    links: Array.isArray(raw.values.links)
-      ? (raw.values.links as WizardFormValues['links'])
-      : [],
+    links: Array.isArray(raw.values.links) ? (raw.values.links as WizardFormValues['links']) : [],
     hours: isRecord(raw.values.hours)
       ? { ...wizardDefaults.hours, ...(raw.values.hours as Partial<WizardFormValues['hours']>) }
       : wizardDefaults.hours,

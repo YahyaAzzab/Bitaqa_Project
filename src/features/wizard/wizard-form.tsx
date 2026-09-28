@@ -299,11 +299,7 @@ export function WizardForm() {
                 dir="rtl"
                 {...register('businessNameAr')}
               />
-              <Input
-                label={t('tagline')}
-                className="text-[16px]"
-                {...register('taglineFr')}
-              />
+              <Input label={t('tagline')} className="text-[16px]" {...register('taglineFr')} />
               <Input
                 label={t('slug')}
                 className="text-[16px]"
@@ -400,11 +396,7 @@ export function WizardForm() {
                 dir="ltr"
                 {...register('email')}
               />
-              <Input
-                label={t('address')}
-                className="text-[16px]"
-                {...register('addressFr')}
-              />
+              <Input label={t('address')} className="text-[16px]" {...register('addressFr')} />
               <Input
                 label={t('maps')}
                 className="text-[16px]"
@@ -518,7 +510,10 @@ export function WizardForm() {
                   value={theme}
                   onChange={(next) => {
                     setValue('theme', next.id, { shouldDirty: true });
-                    setValue('accentColor', next.accent, { shouldDirty: true, shouldValidate: true });
+                    setValue('accentColor', next.accent, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
                   }}
                 />
               </div>

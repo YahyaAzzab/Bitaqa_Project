@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  computePeriodTotals,
-  dateKeyInTz,
-  groupSalesByDay,
-} from '@/lib/dashboard/cash';
+import { computePeriodTotals, dateKeyInTz, groupSalesByDay } from '@/lib/dashboard/cash';
 import { isAdjacentAdvance, isForwardSkip, nextFlowStatus } from '@/lib/dashboard/orders';
 
 describe('cash period totals', () => {

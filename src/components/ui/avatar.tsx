@@ -48,7 +48,7 @@ export function Avatar({ name, src, size = 48, className, priority = false }: Av
         />
       ) : (
         <span
-          className="font-semibold leading-none tracking-tight"
+          className="leading-none font-semibold tracking-tight"
           style={{ fontSize: Math.round(size * (initials.length > 1 ? 0.34 : 0.42)) }}
           aria-hidden
         >

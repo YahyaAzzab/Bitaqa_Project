@@ -5,10 +5,7 @@ import { formatMad } from '@/lib/money';
 import { isSupabaseConfigured } from '@/lib/env';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-export async function GET(
-  _request: Request,
-  context: { params: Promise<{ slug: string }> },
-) {
+export async function GET(_request: Request, context: { params: Promise<{ slug: string }> }) {
   const { slug } = await context.params;
   const session = await getSellerSession();
   if (!session || !isSupabaseConfigured()) {
