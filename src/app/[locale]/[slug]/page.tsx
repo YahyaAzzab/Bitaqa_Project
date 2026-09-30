@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { ProfileIntro } from '@/features/profile/profile-intro';
 import { ProfileView } from '@/features/profile/profile-view';
 import { SuspendedProfile } from '@/features/profile/suspended-profile';
 import type { Locale } from '@/i18n/config';
@@ -128,6 +129,19 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
   const profileUrl = publicProfileUrl(locale, slug);
   const data = toPreview(state.profile);
+  const introName =
+    (locale === 'ar' ? data.businessNameAr || data.businessNameFr : data.businessNameFr) ||
+    'Bitaqa';
 
-  return <ProfileView data={data} profileUrl={profileUrl} locale={locale} />;
+  return (
+    <>
+      <ProfileIntro
+        slug={slug}
+        name={introName}
+        theme={data.theme ?? resolveProfileTheme('noir')}
+        accentColor={data.accentColor}
+      />
+      <ProfileView data={data} profileUrl={profileUrl} locale={locale} />
+    </>
+  );
 }
