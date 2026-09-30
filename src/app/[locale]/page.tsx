@@ -1,9 +1,18 @@
+import type { CSSProperties } from 'react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ArrowUpRight, Phone, Radio, UserRound } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { TEAM_PHONES } from '@/lib/contact';
 
 const PHONES = TEAM_PHONES;
+
+const INTRO_WORD = 'BITAQA';
+
+/*
+ * Runs before the splash is painted: the intro plays once per visit, never again on a
+ * language switch or a return to the home page.
+ */
+const INTRO_SCRIPT = `try{var d=document.documentElement;if(sessionStorage.getItem('bitaqa:intro')){d.dataset.intro='seen'}else{sessionStorage.setItem('bitaqa:intro','1');setTimeout(function(){d.dataset.intro='seen'},1400)}}catch(e){}`;
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -13,6 +22,20 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <main className="home-shell relative min-h-dvh overflow-hidden">
+      <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }} />
+      <div className="home-intro" aria-hidden>
+        <div className="home-intro-inner">
+          <span className="home-mark home-intro-mark">B</span>
+          <span className="home-intro-word" dir="ltr">
+            {INTRO_WORD.split('').map((letter, i) => (
+              <span key={i} style={{ '--i': i } as CSSProperties}>
+                {letter}
+              </span>
+            ))}
+          </span>
+          <span className="home-intro-line" />
+        </div>
+      </div>
       <div className="home-grain pointer-events-none absolute inset-0" aria-hidden />
       <div className="relative mx-auto flex min-h-dvh max-w-6xl flex-col px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-8">
         <header className="flex items-center justify-between gap-4">
@@ -33,15 +56,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </a>
             <Link
               href="/account"
-              className="pressable focus-ring border-border text-text-secondary hover:border-accent hover:text-accent inline-flex min-h-11 items-center gap-2 rounded-md border px-3 text-[13px] font-medium"
+              className="pressable focus-ring border-border text-text-secondary hover:border-accent hover:text-accent inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-md border px-3 text-[13px] font-medium whitespace-nowrap"
             >
-              <UserRound className="size-4" strokeWidth={1.75} aria-hidden />
-              {t('clientSpace')}
+              <UserRound className="size-4 shrink-0" strokeWidth={1.75} aria-hidden />
+              <span className="sr-only min-[400px]:not-sr-only">{t('clientSpace')}</span>
             </Link>
             <Link
               href="/"
               locale={locale === 'fr' ? 'ar' : 'fr'}
-              className="pressable focus-ring border-border text-text-secondary hover:border-accent hover:text-accent inline-flex min-h-11 items-center rounded-md border px-3 text-[13px] font-medium"
+              className="pressable focus-ring border-border text-text-secondary hover:border-accent hover:text-accent inline-flex min-h-11 items-center rounded-md border px-3 text-[13px] font-medium whitespace-nowrap"
             >
               {tc('language')}
             </Link>
@@ -63,7 +86,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
             <div className="animate-rise-delay-3 mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <Link
-                href="/login"
+                href="/account"
                 className="pressable bg-accent text-accent-fg hover:bg-accent-hover focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-md px-5 text-[15px] font-semibold"
               >
                 {t('cta')}
@@ -187,6 +210,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 {phone.display}
               </a>
             ))}
+            <Link
+              href="/login"
+              className="hover:text-accent focus-ring rounded-sm transition-colors"
+            >
+              {t('sellerSpace')}
+            </Link>
             <span className="tracking-[0.14em] uppercase">{t('footerDetail')}</span>
           </div>
         </footer>
