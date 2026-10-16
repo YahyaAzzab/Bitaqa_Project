@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertCircle,
+  CalendarDays,
   Check,
   Copy,
   ExternalLink,
@@ -41,6 +42,21 @@ import { cn } from '@/lib/utils';
 
 type TabId = 'links' | 'profile' | 'design' | 'stats';
 const TABS: TabId[] = ['links', 'profile', 'design', 'stats'];
+
+/** Temps restant avant expires_at, pour un libellé naturel (jours / mois / ans). */
+function remainingTime(expiresAt: string): {
+  days: number;
+  unit: 'day' | 'month' | 'year';
+  count: number;
+  soon: boolean;
+} | null {
+  const days = Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86_400_000);
+  if (days <= 0) return null;
+  if (days <= 45) return { days, unit: 'day', count: days, soon: days <= 30 };
+  const months = Math.max(1, Math.round(days / 30.437));
+  if (months < 18) return { days, unit: 'month', count: months, soon: false };
+  return { days, unit: 'year', count: Math.max(1, Math.round(days / 365.25)), soon: false };
+}
 
 const PROFILE_FIELDS = new Set([
   'businessNameFr',
@@ -234,6 +250,21 @@ export function AccountEditor({
   const expires = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-MA-u-nu-latn' : 'fr-FR', {
     dateStyle: 'long',
   }).format(new Date(meta.expiresAt));
+  const left = remainingTime(meta.expiresAt);
+  const periodStartMs = new Date(meta.expiresAt).getTime() - 365.25 * 86_400_000;
+  const periodProgress = Math.min(
+    1,
+    Math.max(0, (Date.now() - periodStartMs) / (365.25 * 86_400_000)),
+  );
+  const timeLeftLabel = !left
+    ? t('timeLeftGone')
+    : left.soon
+      ? t('timeLeftSoon', { count: left.count })
+      : left.unit === 'day'
+        ? t('timeLeftDays', { count: left.count })
+        : left.unit === 'month'
+          ? t('timeLeftMonths', { count: left.count })
+          : t('timeLeftYears', { count: left.count });
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 pt-[max(1rem,env(safe-area-inset-top))] lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-12 lg:px-8">
@@ -309,6 +340,61 @@ export function AccountEditor({
           <span className="sr-only" aria-live="polite">
             {copied ? t('copied') : ''}
           </span>
+        </section>
+
+        <section
+          aria-label={t('subscription')}
+          className="border-border bg-surface mt-4 rounded-lg border p-4"
+        >
+          <div className="flex items-start gap-3">
+            <span
+              className={cn(
+                'mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-md border',
+                left && !left.soon
+                  ? 'border-accent/35 text-accent bg-accent/10'
+                  : 'border-warning/40 text-warning bg-warning/10',
+              )}
+              aria-hidden
+            >
+              <CalendarDays className="size-5" strokeWidth={1.75} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-text-muted text-[12px] font-medium tracking-[0.12em] uppercase">
+                  {t('subscription')}
+                </p>
+                <span className="border-border bg-bg text-text-secondary inline-flex min-h-7 items-center rounded-full border px-2.5 text-[12px] font-medium">
+                  {meta.planCode === 'signature'
+                    ? t('planSignature')
+                    : meta.planCode === 'essentiel'
+                      ? t('planEssentiel')
+                      : t('planOther', { code: meta.planCode })}
+                </span>
+              </div>
+              <p className="mt-1.5 text-[15px] leading-snug font-semibold">{timeLeftLabel}</p>
+              <p className="text-text-secondary mt-1 text-[13px]">
+                {t('expiresOn', { date: expires })}
+              </p>
+              {left ? (
+                <div
+                  className="bg-border mt-3 h-1.5 overflow-hidden rounded-full"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(periodProgress * 100)}
+                  aria-label={timeLeftLabel}
+                >
+                  <div
+                    className={cn(
+                      'h-full rounded-full transition-[width] duration-300',
+                      left.soon ? 'bg-warning' : 'bg-accent',
+                    )}
+                    style={{ width: `${Math.round(periodProgress * 100)}%` }}
+                  />
+                </div>
+              ) : null}
+            </div>
+          </div>
         </section>
 
         {!meta.editable ? (
