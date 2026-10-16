@@ -6,7 +6,7 @@ import type { PublicProfile } from './types';
 const PROFILE_SELECT = `
   id, slug, status, business_name_fr, business_name_ar,
   tagline_fr, tagline_ar, address_fr, address_ar,
-  default_lang, logo_url, accent_color, theme,
+  default_lang, logo_url, background_url, accent_color, theme,
   phone, email, hours, expires_at,
   profile_links ( id, type, label_fr, label_ar, value, position )
 ` as const;
@@ -23,6 +23,7 @@ function mapRow(row: {
   address_ar: string | null;
   default_lang: 'fr' | 'ar';
   logo_url: string | null;
+  background_url: string | null;
   accent_color: string;
   theme: string;
   phone: string | null;
@@ -47,6 +48,7 @@ function mapRow(row: {
     address_ar: row.address_ar,
     default_lang: row.default_lang,
     logo_url: row.logo_url,
+    background_url: row.background_url,
     accent_color: row.accent_color,
     theme: row.theme,
     phone: row.phone,

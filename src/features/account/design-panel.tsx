@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useWatch, type UseFormReturn } from 'react-hook-form';
+import { BackgroundPicker } from '@/features/account/background-picker';
 import { AccentChoices, ThemePicker } from '@/features/wizard/theme-picker';
 import type { OwnerProfileValues } from '@/lib/profile/schema';
 import { themeDefinition } from '@/lib/profile/themes';
@@ -16,10 +17,19 @@ export function DesignPanel({ form, logoAccent, savedAccent }: Props) {
   const t = useTranslations('dashboard.wizard');
   const tDesign = useTranslations('account.design');
   const { control, setValue } = form;
-  const [theme, accentColor] = useWatch({ control, name: ['theme', 'accentColor'] });
+  const [theme, accentColor, backgroundUrl] = useWatch({
+    control,
+    name: ['theme', 'accentColor', 'backgroundUrl'],
+  });
 
   return (
     <div className="space-y-8">
+      <section>
+        <BackgroundPicker
+          backgroundUrl={backgroundUrl}
+          onChange={(url) => setValue('backgroundUrl', url, { shouldDirty: true })}
+        />
+      </section>
       <section>
         <h3 className="text-text-muted text-[12px] font-medium tracking-[0.14em] uppercase">
           {t('theme')}

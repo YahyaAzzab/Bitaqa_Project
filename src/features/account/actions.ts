@@ -134,7 +134,7 @@ export async function signOutOwner(locale: 'fr' | 'ar') {
   redirect(`/${localeSchema.catch('fr').parse(locale)}/account/login`);
 }
 
-function isOwnLogoUrl(url: string): boolean {
+function isOwnStorageUrl(url: string): boolean {
   return url.startsWith(`${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/`);
 }
 
@@ -160,7 +160,10 @@ export async function saveOwnProfile(
   if (!session.profiles.some((p) => p.id === values.profileId)) {
     return { ok: false, error: 'forbidden' };
   }
-  if (values.logoUrl && !isOwnLogoUrl(values.logoUrl)) {
+  if (values.logoUrl && !isOwnStorageUrl(values.logoUrl)) {
+    return { ok: false, error: 'invalid' };
+  }
+  if (values.backgroundUrl && !isOwnStorageUrl(values.backgroundUrl)) {
     return { ok: false, error: 'invalid' };
   }
   if (!rateLimit(`owner-save:${session.userId}`, { limit: 30, windowMs: 60_000 }).ok) {
@@ -179,6 +182,7 @@ export async function saveOwnProfile(
     p_tagline_ar: emptyToNull(values.taglineAr),
     p_address_fr: emptyToNull(values.addressFr),
     p_logo_url: values.logoUrl ?? null,
+    p_background_url: values.backgroundUrl ?? null,
     p_accent_color: values.accentColor,
     p_theme: values.theme,
     p_phone: phone,
@@ -195,24 +199,25 @@ export async function saveOwnProfile(
   return { ok: true, data: { slug } };
 }
 
-const ALLOWED_LOGO_TYPES = ['image/webp', 'image/jpeg', 'image/png'];
+const ALLOWED_IMAGE_TYPES = ['image/webp', 'image/jpeg', 'image/png'];
 
-export async function uploadOwnLogo(
+async function uploadOwnerImage(
   formData: FormData,
+  { maxBytes, prefix }: { maxBytes: number; prefix: string },
 ): Promise<AccountActionResult<{ url: string }>> {
   const session = await getAccountSession();
   if (!session || session.profiles.length === 0) return { ok: false, error: 'unauthorized' };
 
   const file = formData.get('file');
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'file_missing' };
-  if (file.size > 500_000) return { ok: false, error: 'file_too_large' };
+  if (file.size > maxBytes) return { ok: false, error: 'file_too_large' };
 
   // Certains WebView mobiles envoient un type vide après compression.
   const type = file.type === 'image/jpg' || file.type === '' ? 'image/jpeg' : file.type;
-  if (!ALLOWED_LOGO_TYPES.includes(type)) return { ok: false, error: 'file_type' };
+  if (!ALLOWED_IMAGE_TYPES.includes(type)) return { ok: false, error: 'file_type' };
 
   const ext = type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : 'jpg';
-  const path = `owners/${session.userId}/${crypto.randomUUID()}.${ext}`;
+  const path = `owners/${session.userId}/${prefix}-${crypto.randomUUID()}.${ext}`;
 
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.storage
@@ -222,4 +227,16 @@ export async function uploadOwnLogo(
 
   const { data } = supabase.storage.from('logos').getPublicUrl(path);
   return { ok: true, data: { url: data.publicUrl } };
+}
+
+export async function uploadOwnLogo(
+  formData: FormData,
+): Promise<AccountActionResult<{ url: string }>> {
+  return uploadOwnerImage(formData, { maxBytes: 500_000, prefix: 'logo' });
+}
+
+export async function uploadOwnBackground(
+  formData: FormData,
+): Promise<AccountActionResult<{ url: string }>> {
+  return uploadOwnerImage(formData, { maxBytes: 700_000, prefix: 'bg' });
 }

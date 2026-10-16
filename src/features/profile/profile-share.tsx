@@ -12,9 +12,11 @@ import { useToast } from '@/components/ui/toast';
 type Props = {
   url: string;
   title: string;
+  /** Sur un fond photo, le groupe reste lisible. */
+  elevated?: boolean;
 };
 
-export function ProfileShareControls({ url, title }: Props) {
+export function ProfileShareControls({ url, title, elevated = false }: Props) {
   const t = useTranslations('profile');
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
@@ -61,7 +63,13 @@ export function ProfileShareControls({ url, title }: Props) {
 
   return (
     <>
-      <div className="border-border bg-surface/70 flex items-center rounded-full border p-0.5">
+      <div
+        className={
+          elevated
+            ? 'border-border bg-bg/75 flex items-center rounded-full border p-0.5 backdrop-blur-sm'
+            : 'border-border bg-surface/70 flex items-center rounded-full border p-0.5'
+        }
+      >
         <IconButton
           label={t('share')}
           className="text-text-secondary hover:text-text rounded-full"

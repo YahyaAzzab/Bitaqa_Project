@@ -96,6 +96,7 @@ function toPreview(profile: PublicProfile): ProfilePreviewData & {
     addressFr: profile.address_fr ?? undefined,
     addressAr: profile.address_ar ?? undefined,
     logoUrl: profile.logo_url,
+    backgroundUrl: profile.background_url,
     accentColor: profile.accent_color,
     theme: resolveProfileTheme(profile.theme),
     phone: profile.phone ?? undefined,

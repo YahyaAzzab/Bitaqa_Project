@@ -20,6 +20,7 @@ export type PublicProfile = Pick<
   | 'address_ar'
   | 'default_lang'
   | 'logo_url'
+  | 'background_url'
   | 'accent_color'
   | 'theme'
   | 'phone'
@@ -38,6 +39,7 @@ export type ProfilePreviewData = {
   addressFr?: string;
   addressAr?: string;
   logoUrl?: string | null;
+  backgroundUrl?: string | null;
   accentColor: string;
   theme: ThemeName;
   phone?: string;

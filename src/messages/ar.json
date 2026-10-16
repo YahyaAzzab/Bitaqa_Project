@@ -600,7 +600,18 @@
     },
     "design": {
       "themeHint": "يُطبَّق المظهر على صفحتك كلها. غيّره متى شئت.",
-      "accentSaved": "الحالي"
+      "accentSaved": "الحالي",
+      "background": "صورة الخلفية",
+      "backgroundHint": "اختياري. صورة عريضة أعلى صفحتك، خلف الشعار.",
+      "backgroundEmpty": "لا توجد صورة بعد",
+      "bgGallery": "المعرض",
+      "bgCamera": "كاميرا",
+      "bgRemove": "إزالة الخلفية",
+      "bgSuccess": "أُضيفت الخلفية — احفظ لنشرها",
+      "bgErrorType": "اختر صورة (JPEG أو PNG أو WebP)",
+      "bgErrorAuth": "سجّل الدخول من جديد لتغيير الخلفية",
+      "bgErrorUpload": "تعذّر إرسال الصورة. حاول مرة أخرى.",
+      "bgErrorGeneric": "تعذّر تجهيز الخلفية. حاول مرة أخرى."
     },
     "stats": {
       "last7": "آخر 7 أيام",

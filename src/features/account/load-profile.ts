@@ -96,6 +96,7 @@ export async function loadOwnerProfile(profileId: string) {
     addressFr: profile.address_fr ?? '',
     mapsUrl: rows.find((l) => l.type === 'maps')?.value ?? '',
     logoUrl: profile.logo_url,
+    backgroundUrl: profile.background_url,
     hoursEnabled: hours !== null,
     hours: hours
       ? (Object.fromEntries(DAYS.map((d) => [d, hours[d] ?? []])) as OwnerProfileValues['hours'])

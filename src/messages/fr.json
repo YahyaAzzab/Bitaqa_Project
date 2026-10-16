@@ -600,7 +600,18 @@
     },
     "design": {
       "themeHint": "Le thème s’applique à toute votre page. Changez-le quand vous voulez.",
-      "accentSaved": "Actuelle"
+      "accentSaved": "Actuelle",
+      "background": "Photo de fond",
+      "backgroundHint": "Facultatif. Une photo large en haut de votre page, derrière le logo.",
+      "backgroundEmpty": "Aucune photo pour l’instant",
+      "bgGallery": "Galerie",
+      "bgCamera": "Photo",
+      "bgRemove": "Retirer le fond",
+      "bgSuccess": "Fond ajouté — enregistrez pour le publier",
+      "bgErrorType": "Choisissez une image (JPEG, PNG ou WebP)",
+      "bgErrorAuth": "Reconnectez-vous pour changer le fond",
+      "bgErrorUpload": "L’image n’a pas pu être envoyée. Réessayez.",
+      "bgErrorGeneric": "Le fond n’a pas pu être préparé. Réessayez."
     },
     "stats": {
       "last7": "7 derniers jours",

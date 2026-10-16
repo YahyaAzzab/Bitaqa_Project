@@ -106,6 +106,7 @@ export type Database = {
           address_ar: string | null;
           default_lang: 'fr' | 'ar';
           logo_url: string | null;
+          background_url: string | null;
           accent_color: string;
           theme: string;
           phone: string | null;
@@ -131,6 +132,7 @@ export type Database = {
           address_ar?: string | null;
           default_lang?: 'fr' | 'ar';
           logo_url?: string | null;
+          background_url?: string | null;
           accent_color?: string;
           theme?: string;
           phone?: string | null;
@@ -156,6 +158,7 @@ export type Database = {
           address_ar?: string | null;
           default_lang?: 'fr' | 'ar';
           logo_url?: string | null;
+          background_url?: string | null;
           accent_color?: string;
           theme?: string;
           phone?: string | null;
@@ -407,6 +410,7 @@ export type Database = {
           p_tagline_ar: string | null;
           p_address_fr: string | null;
           p_logo_url: string | null;
+          p_background_url: string | null;
           p_accent_color: string;
           p_theme: string;
           p_phone: string | null;
@@ -457,7 +461,12 @@ export type Database = {
       };
       admin_delete_profile: {
         Args: { p_profile_id: string };
-        Returns: Array<{ slug: string; logo_url: string | null; owner_user_id: string | null }>;
+        Returns: Array<{
+          slug: string;
+          logo_url: string | null;
+          background_url: string | null;
+          owner_user_id: string | null;
+        }>;
       };
     };
     Enums: {

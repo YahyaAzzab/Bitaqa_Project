@@ -161,16 +161,27 @@ export async function reactivateProfile(profileId: string): Promise<ProfileActio
 
 const LOGO_PREFIX = `${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/`;
 
-async function cleanUpDeletedProfile(logoUrl: string | null, ownerId: string | null) {
+async function removeOrphanStorageUrl(url: string | null, column: 'logo_url' | 'background_url') {
+  if (!url?.startsWith(LOGO_PREFIX)) return;
+  const service = createServiceClient();
+  const { count } = await service
+    .from('profiles')
+    .select('id', { count: 'exact', head: true })
+    .eq(column, url);
+  if (!count) await service.storage.from('logos').remove([url.slice(LOGO_PREFIX.length)]);
+}
+
+async function cleanUpDeletedProfile(
+  logoUrl: string | null,
+  backgroundUrl: string | null,
+  ownerId: string | null,
+) {
   const service = createServiceClient();
 
-  if (logoUrl?.startsWith(LOGO_PREFIX)) {
-    const { count } = await service
-      .from('profiles')
-      .select('id', { count: 'exact', head: true })
-      .eq('logo_url', logoUrl);
-    if (!count) await service.storage.from('logos').remove([logoUrl.slice(LOGO_PREFIX.length)]);
-  }
+  await Promise.all([
+    removeOrphanStorageUrl(logoUrl, 'logo_url'),
+    removeOrphanStorageUrl(backgroundUrl, 'background_url'),
+  ]);
 
   if (ownerId) {
     const [{ count: owned }, { data: seller }] = await Promise.all([
@@ -204,7 +215,11 @@ export async function deleteProfile(profileId: string): Promise<ProfileActionRes
   if (!deleted) return { ok: false, error: 'not_found' };
 
   // The profile is already gone; leftover files or accounts must not turn this into a failure.
-  await cleanUpDeletedProfile(deleted.logo_url, deleted.owner_user_id).catch(() => undefined);
+  await cleanUpDeletedProfile(
+    deleted.logo_url,
+    deleted.background_url,
+    deleted.owner_user_id,
+  ).catch(() => undefined);
 
   await revalidatePublicProfile(deleted.slug);
   for (const locale of ['fr', 'ar']) {

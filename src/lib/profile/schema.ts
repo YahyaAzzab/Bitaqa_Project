@@ -197,6 +197,7 @@ export const ownerProfileObjectSchema = wizardFormObjectSchema
   })
   .extend({
     profileId: z.string().uuid(),
+    backgroundUrl: z.string().url().nullable().optional(),
     links: z.array(ownerLinkSchema).max(12),
   });
 

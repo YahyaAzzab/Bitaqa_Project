@@ -309,6 +309,22 @@ html[lang='ar'] body {
   );
 }
 
+.profile-cover {
+  height: min(52vw, 17.5rem);
+  max-height: 20rem;
+}
+
+.profile-cover-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bg) 18%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 55%, transparent) 48%,
+    var(--bg) 100%
+  );
+}
+
 /* Always the physical card's matte black, whatever the profile theme. */
 .profile-mini-card {
   background: linear-gradient(145deg, #1c1c1c 0%, #0b0b0b 100%);

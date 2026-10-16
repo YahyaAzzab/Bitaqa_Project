@@ -2,6 +2,7 @@
 
 import { LazyMotion, domAnimation, m } from 'framer-motion';
 import { ArrowRight, BookmarkPlus, MapPin, MessageCircle, Nfc, Phone } from 'lucide-react';
+import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, type ComponentType } from 'react';
 import { Link } from '@/i18n/navigation';
@@ -125,10 +126,27 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
         style={accentStyle(data.accentColor)}
         className={cn('bg-bg text-text relative isolate', !preview && 'min-h-dvh')}
       >
-        <div
-          aria-hidden
-          className="profile-halo pointer-events-none absolute inset-x-0 top-0 -z-10 h-80"
-        />
+        {data.backgroundUrl ? (
+          <div
+            aria-hidden
+            className="profile-cover pointer-events-none absolute inset-x-0 top-0 -z-10"
+          >
+            <Image
+              src={data.backgroundUrl}
+              alt=""
+              fill
+              priority={!preview}
+              sizes="(max-width: 430px) 100vw, 448px"
+              className="object-cover object-center"
+            />
+            <div className="profile-cover-fade" />
+          </div>
+        ) : (
+          <div
+            aria-hidden
+            className="profile-halo pointer-events-none absolute inset-x-0 top-0 -z-10 h-80"
+          />
+        )}
 
         <div
           className={cn(
@@ -141,13 +159,20 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
           )}
         >
           <header className="flex items-center justify-between gap-2">
-            <ProfileShareControls url={profileUrl} title={name} />
+            <ProfileShareControls
+              url={profileUrl}
+              title={name}
+              elevated={Boolean(data.backgroundUrl)}
+            />
             {!preview && data.slug ? (
               <a
                 href={`/${otherLocale}/${data.slug}`}
                 hrefLang={otherLocale}
                 lang={otherLocale}
-                className="pressable focus-ring border-border bg-surface/70 text-text-secondary hover:text-text inline-flex min-h-12 items-center rounded-full border px-4 text-[13px] font-medium"
+                className={cn(
+                  'pressable focus-ring border-border text-text-secondary hover:text-text inline-flex min-h-12 items-center rounded-full border px-4 text-[13px] font-medium',
+                  data.backgroundUrl ? 'bg-bg/75 backdrop-blur-sm' : 'bg-surface/70',
+                )}
               >
                 {otherLocale === 'ar' ? 'العربية' : 'Français'}
               </a>
@@ -155,7 +180,10 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
           </header>
 
           <m.div
-            className="mt-10 flex flex-col items-center text-center"
+            className={cn(
+              'flex flex-col items-center text-center',
+              data.backgroundUrl ? 'mt-28' : 'mt-10',
+            )}
             variants={variantsFor(reduced, staggerContainer)}
             initial="hidden"
             animate="show"

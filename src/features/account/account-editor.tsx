@@ -89,6 +89,7 @@ function toPreview(values: OwnerProfileValues): ProfilePreviewData {
     taglineAr: values.taglineAr || undefined,
     addressFr: values.addressFr || undefined,
     logoUrl: values.logoUrl,
+    backgroundUrl: values.backgroundUrl,
     accentColor: values.accentColor,
     theme: values.theme,
     phone,

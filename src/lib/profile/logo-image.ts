@@ -41,6 +41,63 @@ export async function compressLogoImage(
   return { blob, mime, ext: mime === 'image/webp' ? 'webp' : 'jpg' };
 }
 
+/**
+ * Fond de page : conserve le ratio, max ~1200 px de large, ≤ maxBytes.
+ * Recadre légèrement en 3:2 centré si la photo est très haute (portrait).
+ */
+export async function compressCoverImage(
+  file: File,
+  maxBytes = 400_000,
+): Promise<{ blob: Blob; mime: 'image/webp' | 'image/jpeg'; ext: 'webp' | 'jpg' }> {
+  const source = await loadImageSource(file);
+  const ratio = source.width / source.height;
+  const targetRatio = 3 / 2;
+
+  const sx = 0;
+  let sy = 0;
+  const sw = source.width;
+  let sh = source.height;
+
+  // Portraits trop étroits : cadre 3:2 centré pour un vrai fond, pas une bande.
+  if (ratio < targetRatio * 0.85) {
+    sh = Math.round(source.width / targetRatio);
+    sy = Math.max(0, Math.round((source.height - sh) / 2));
+  }
+
+  let outW = Math.min(sw, 1200);
+  let outH = Math.round((outW * sh) / sw);
+  let quality = 0.84;
+  let blob: Blob | null = null;
+  let mime: 'image/webp' | 'image/jpeg' = 'image/webp';
+
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const canvas = document.createElement('canvas');
+    canvas.width = outW;
+    canvas.height = outH;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('canvas');
+    ctx.drawImage(source.drawable, sx, sy, sw, sh, 0, 0, outW, outH);
+
+    blob = await canvasToBlob(canvas, 'image/webp', quality);
+    mime = 'image/webp';
+    if (!blob) {
+      blob = await canvasToBlob(canvas, 'image/jpeg', quality);
+      mime = 'image/jpeg';
+    }
+
+    if (blob && blob.size <= maxBytes) break;
+    if (quality > 0.45) quality -= 0.1;
+    else {
+      outW = Math.max(480, Math.round(outW * 0.85));
+      outH = Math.round((outW * sh) / sw);
+    }
+  }
+
+  source.close();
+  if (!blob) throw new Error('compress');
+  return { blob, mime, ext: mime === 'image/webp' ? 'webp' : 'jpg' };
+}
+
 type ImageSource = {
   drawable: CanvasImageSource;
   width: number;
