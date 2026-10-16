@@ -128,6 +128,15 @@ export const wizardFormObjectSchema = z.object({
     .email({ message: 'email_invalid' })
     .optional()
     .or(z.literal('')),
+  /** Code parrainage du commerçant qui a recommandé (optionnel). */
+  referralCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .max(12)
+    .regex(/^[A-Z0-9]*$/, { message: 'referral_invalid' })
+    .optional()
+    .or(z.literal('')),
 });
 
 type ContactAndHours = {
@@ -263,6 +272,7 @@ export const wizardDefaults: WizardFormValues = {
   defaultLang: 'fr',
   clientAccess: true,
   ownerEmail: '',
+  referralCode: '',
 };
 
 /** Schéma partiel par étape pour valider avant d’avancer. */
@@ -297,6 +307,7 @@ export const stepSchemas = {
     amountMad: true,
     cashConfirmed: true,
     designNotes: true,
+    referralCode: true,
   }),
 } as const;
 

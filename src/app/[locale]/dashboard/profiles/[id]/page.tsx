@@ -165,6 +165,7 @@ export default async function ProfileDetailPage({
         profileId={profile.id}
         slug={profile.slug}
         planCode={profile.plan_code}
+        expiresAt={profile.expires_at}
         suspended={profile.status === 'suspended'}
         suspensionReason={profile.suspension_reason ?? null}
         businessName={profile.business_name_fr}

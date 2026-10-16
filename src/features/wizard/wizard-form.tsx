@@ -190,7 +190,7 @@ export function WizardForm() {
       ],
       links: ['links'],
       identity: ['theme', 'accentColor'],
-      plan: ['planCode', 'amountMad', 'cashConfirmed', 'designNotes'],
+      plan: ['planCode', 'amountMad', 'cashConfirmed', 'designNotes', 'referralCode'],
     };
     const current = STEPS[step];
     if (!current) return false;
@@ -632,6 +632,18 @@ export function WizardForm() {
                   {...register('designNotes')}
                 />
               ) : null}
+              <Input
+                label={t('referralCode')}
+                hint={t('referralCodeHint')}
+                autoCapitalize="characters"
+                autoComplete="off"
+                spellCheck={false}
+                enterKeyHint="done"
+                dir="ltr"
+                className="text-[16px] tracking-[0.18em] uppercase"
+                maxLength={12}
+                {...register('referralCode')}
+              />
             </>
           ) : null}
         </motion.div>

@@ -85,6 +85,7 @@ export default async function AccountPage({
         initial={loaded.values}
         meta={loaded.meta}
         stats={loaded.stats}
+        referral={loaded.referral}
         publicUrl={publicProfileUrl(locale, loaded.meta.slug)}
         email={session.email}
         passwordSet={session.passwordSet}

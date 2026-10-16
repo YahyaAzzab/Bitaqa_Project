@@ -85,6 +85,18 @@ export async function createProfile(raw: WizardFormValues): Promise<ActionResult
 
   if (!profileId) return { ok: false, error: 'generic' };
 
+  // Parrainage : silencieux si code vide / invalide — la vente ne doit pas échouer.
+  const referralCode = values.referralCode?.trim();
+  if (referralCode) {
+    const { data: referrerSlug, error: referralError } = await supabase.rpc('attach_referral', {
+      p_profile_id: profileId,
+      p_referral_code: referralCode,
+    });
+    if (!referralError && referrerSlug) {
+      await revalidatePublicProfile(referrerSlug);
+    }
+  }
+
   // The sale is already recorded: an account failure must not undo it, the seller retries from the ready screen.
   let owner: CreatedProfile['owner'] = null;
   if (values.clientAccess && values.ownerEmail) {

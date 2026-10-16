@@ -12,7 +12,9 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import type { Database } from '@/lib/supabase/database.types';
 
-export type ProfileActionResult = { ok: true } | { ok: false; error: string };
+export type ProfileActionResult<T = undefined> =
+  | (T extends undefined ? { ok: true } : { ok: true; data: T })
+  | { ok: false; error: string };
 
 const renewSchema = z.object({
   profileId: z.string().uuid(),
@@ -55,6 +57,44 @@ async function revalidateProfile(slug: string, id: string) {
   revalidatePath(`/ar/dashboard/profiles/${id}`);
   revalidatePath('/fr/dashboard/profiles');
   revalidatePath('/ar/dashboard/profiles');
+}
+
+const extendSchema = z.object({
+  profileId: z.string().uuid(),
+  months: z.coerce.number().int().min(1).max(60),
+});
+
+/** Admin : prolonge l’abonnement sans créer de vente (cadeau, geste commercial, etc.). */
+export async function extendSubscription(
+  profileId: string,
+  months: number,
+): Promise<ProfileActionResult<{ expiresAt: string }>> {
+  const session = await getSellerSession();
+  if (!session) return { ok: false, error: 'unauthorized' };
+  if (session.seller.role !== 'admin') return { ok: false, error: 'forbidden' };
+
+  const parsed = extendSchema.safeParse({ profileId, months });
+  if (!parsed.success) return { ok: false, error: 'invalid' };
+
+  const supabase = await createServerSupabaseClient();
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, slug')
+    .eq('id', parsed.data.profileId)
+    .maybeSingle();
+  if (!profile) return { ok: false, error: 'not_found' };
+
+  const { data: expiresAt, error } = await supabase.rpc('admin_extend_subscription', {
+    p_profile_id: parsed.data.profileId,
+    p_months: parsed.data.months,
+  });
+  if (error || !expiresAt) {
+    if (error?.message.includes('forbidden')) return { ok: false, error: 'forbidden' };
+    return { ok: false, error: 'generic' };
+  }
+
+  await revalidateProfile(profile.slug, profile.id);
+  return { ok: true, data: { expiresAt } };
 }
 
 export async function renewProfile(

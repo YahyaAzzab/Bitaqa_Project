@@ -15,6 +15,16 @@ export type OwnerProfileMeta = {
   editable: boolean;
 };
 
+export type OwnerReferralStats = {
+  code: string;
+  count: number;
+  bonusYears: number;
+  /** Filleuls encore nécessaires pour la prochaine année (1 ou 2). */
+  needed: number;
+  /** Progression dans le duo courant (0 ou 1). */
+  progress: number;
+};
+
 export type OwnerScanStats = {
   scans7: number;
   scans30: number;
@@ -56,9 +66,21 @@ function parseStats(raw: Json | null): OwnerScanStats {
   };
 }
 
+function parseReferral(raw: Json | null, fallbackCode: string): OwnerReferralStats {
+  const o = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const count = Number(o.count) || 0;
+  return {
+    code: typeof o.code === 'string' && o.code ? o.code : fallbackCode,
+    count,
+    bonusYears: Number(o.bonus_years) || 0,
+    needed: Math.max(1, Number(o.needed) || 2 - (count % 2)),
+    progress: Number(o.progress) || count % 2,
+  };
+}
+
 export async function loadOwnerProfile(profileId: string) {
   const supabase = await createServerSupabaseClient();
-  const [{ data: profile }, { data: links }, { data: gallery }, { data: stats }] =
+  const [{ data: profile }, { data: links }, { data: gallery }, { data: stats }, { data: referral }] =
     await Promise.all([
       supabase.from('profiles').select('*').eq('id', profileId).maybeSingle(),
       supabase
@@ -72,6 +94,7 @@ export async function loadOwnerProfile(profileId: string) {
         .eq('profile_id', profileId)
         .order('position', { ascending: true }),
       supabase.rpc('profile_scan_stats', { p_profile_id: profileId }),
+      supabase.rpc('profile_referral_stats', { p_profile_id: profileId }),
     ]);
   if (!profile) return null;
 
@@ -136,5 +159,10 @@ export async function loadOwnerProfile(profileId: string) {
     editable: profile.status === 'active' && new Date(profile.expires_at).getTime() > Date.now(),
   };
 
-  return { values, meta, stats: parseStats(stats) };
+  return {
+    values,
+    meta,
+    stats: parseStats(stats),
+    referral: parseReferral(referral, profile.referral_code ?? ''),
+  };
 }

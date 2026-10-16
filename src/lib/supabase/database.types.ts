@@ -114,6 +114,9 @@ export type Database = {
           hours: Json | null;
           owner_user_id: string | null;
           suspension_reason: string | null;
+          referral_code: string;
+          referred_by: string | null;
+          referral_bonus_years: number;
           expires_at: string;
           created_at: string;
           updated_at: string;
@@ -140,6 +143,9 @@ export type Database = {
           hours?: Json | null;
           owner_user_id?: string | null;
           suspension_reason?: string | null;
+          referral_code?: string;
+          referred_by?: string | null;
+          referral_bonus_years?: number;
           expires_at?: string;
           created_at?: string;
           updated_at?: string;
@@ -166,6 +172,9 @@ export type Database = {
           hours?: Json | null;
           owner_user_id?: string | null;
           suspension_reason?: string | null;
+          referral_code?: string;
+          referred_by?: string | null;
+          referral_bonus_years?: number;
           expires_at?: string;
           created_at?: string;
           updated_at?: string;
@@ -461,6 +470,24 @@ export type Database = {
           p_items: Json;
         };
         Returns: null;
+      };
+      admin_extend_subscription: {
+        Args: {
+          p_profile_id: string;
+          p_months: number;
+        };
+        Returns: string;
+      };
+      attach_referral: {
+        Args: {
+          p_profile_id: string;
+          p_referral_code: string;
+        };
+        Returns: string | null;
+      };
+      profile_referral_stats: {
+        Args: { p_profile_id: string };
+        Returns: Json;
       };
       create_profile_atomic: {
         Args: {

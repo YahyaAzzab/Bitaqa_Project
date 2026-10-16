@@ -1,6 +1,6 @@
 'use client';
 
-import { ExternalLink, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
+import { CalendarPlus, ExternalLink, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useState, useTransition } from 'react';
@@ -11,17 +11,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import {
   deleteProfile,
+  extendSubscription,
   reactivateProfile,
   renewProfile,
   suspendProfile,
 } from '@/features/profiles/actions';
 import { PLAN_PRICES, SUSPENSION_REASON_MAX } from '@/lib/profile/schema';
 import { formatMad } from '@/lib/money';
+import { cn } from '@/lib/utils';
 
 type Props = {
   profileId: string;
   slug: string;
   planCode: string;
+  expiresAt: string;
   suspended: boolean;
   suspensionReason: string | null;
   businessName: string;
@@ -30,7 +33,9 @@ type Props = {
   publicUrl: string;
 };
 
-type OpenDialog = 'renew' | 'suspend' | 'delete' | null;
+type OpenDialog = 'renew' | 'extend' | 'suspend' | 'delete' | null;
+
+const EXTEND_PRESETS = [1, 3, 6, 12] as const;
 
 const KNOWN_ERRORS = ['unauthorized', 'forbidden', 'not_found', 'invalid'] as const;
 
@@ -38,6 +43,7 @@ export function ProfileActions({
   profileId,
   slug,
   planCode,
+  expiresAt,
   suspended,
   suspensionReason,
   businessName,
@@ -52,9 +58,14 @@ export function ProfileActions({
   const [open, setOpen] = useState<OpenDialog>(null);
   const renewalDefault = planCode === 'signature' ? PLAN_PRICES.signature : PLAN_PRICES.essentiel;
   const [amount, setAmount] = useState<number>(renewalDefault);
+  const [extendMonths, setExtendMonths] = useState<number>(12);
   const [confirmName, setConfirmName] = useState('');
   const [reason, setReason] = useState('');
   const [pending, start] = useTransition();
+
+  const expiresLabel = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-MA-u-nu-latn' : 'fr-FR', {
+    dateStyle: 'medium',
+  }).format(new Date(expiresAt));
 
   const errorMessage = (code: string) =>
     t(`actionErrors.${KNOWN_ERRORS.find((known) => known === code) ?? 'generic'}`);
@@ -78,6 +89,16 @@ export function ProfileActions({
       () => renewProfile(profileId, amount),
       () => {
         toast({ title: t('renewed'), variant: 'success' });
+        setOpen(null);
+        router.refresh();
+      },
+    );
+
+  const onExtend = () =>
+    run(
+      () => extendSubscription(profileId, extendMonths),
+      () => {
+        toast({ title: t('extended'), variant: 'success' });
         setOpen(null);
         router.refresh();
       },
@@ -152,6 +173,13 @@ export function ProfileActions({
 
       {isAdmin ? (
         <div className="border-border mt-4 space-y-2 border-t pt-4">
+          <p className="text-text-muted px-1 text-[12px]">
+            {t('expires', { date: expiresLabel })}
+          </p>
+          <Button variant="secondary" className="w-full" onClick={() => setOpen('extend')}>
+            <CalendarPlus className="size-4" strokeWidth={1.75} />
+            {t('extend')}
+          </Button>
           {suspended && suspensionReason ? (
             <div className="border-border bg-surface rounded-md border px-4 py-3">
               <p className="text-text-muted text-[12px] font-medium tracking-wide">
@@ -209,6 +237,60 @@ export function ProfileActions({
         <p className="text-text-muted mt-2 text-[12px]" dir="ltr">
           /{slug}
         </p>
+      </Dialog>
+
+      <Dialog
+        open={open === 'extend'}
+        onClose={closeDialog}
+        title={t('extend')}
+        closeLabel={tProfile('close')}
+        footer={
+          <div className="flex gap-2">
+            <Button variant="secondary" className="flex-1" onClick={closeDialog}>
+              {tProfile('close')}
+            </Button>
+            <Button className="flex-1" loading={pending} onClick={onExtend}>
+              {t('extendConfirm')}
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-text-secondary text-[14px]">{t('confirmExtend')}</p>
+        <p className="text-text-muted mt-2 text-[13px]">
+          {t('extendCurrent', { date: expiresLabel })}
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label={t('extendMonths')}>
+          {EXTEND_PRESETS.map((months) => (
+            <button
+              key={months}
+              type="button"
+              onClick={() => setExtendMonths(months)}
+              className={cn(
+                'pressable focus-ring min-h-12 min-w-12 rounded-md border px-3 text-[14px] font-medium',
+                extendMonths === months
+                  ? 'border-accent bg-accent/10 text-accent'
+                  : 'border-border bg-surface text-text',
+              )}
+            >
+              {t('extendPreset', { count: months })}
+            </button>
+          ))}
+        </div>
+        <div className="mt-4">
+          <Input
+            label={t('extendMonths')}
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={60}
+            className="text-[16px]"
+            value={extendMonths}
+            onChange={(e) => {
+              const n = Number(e.target.value);
+              if (Number.isFinite(n)) setExtendMonths(Math.min(60, Math.max(1, Math.floor(n))));
+            }}
+          />
+        </div>
       </Dialog>
 
       <Dialog

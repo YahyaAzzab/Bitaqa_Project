@@ -9,6 +9,7 @@ import {
   Copy,
   ExternalLink,
   Eye,
+  Gift,
   KeyRound,
   Settings2,
   Share2,
@@ -26,7 +27,11 @@ import { saveOwnProfile } from '@/features/account/actions';
 import { DesignPanel } from '@/features/account/design-panel';
 import { GalleryPanel } from '@/features/account/gallery-panel';
 import { LinksPanel } from '@/features/account/links-panel';
-import type { OwnerProfileMeta, OwnerScanStats } from '@/features/account/load-profile';
+import type {
+  OwnerProfileMeta,
+  OwnerReferralStats,
+  OwnerScanStats,
+} from '@/features/account/load-profile';
 import { PasswordForm } from '@/features/account/password-form';
 import { ProfilePanel } from '@/features/account/profile-panel';
 import { StatsPanel } from '@/features/account/stats-panel';
@@ -84,6 +89,7 @@ type Props = {
   initial: OwnerProfileValues;
   meta: OwnerProfileMeta;
   stats: OwnerScanStats;
+  referral: OwnerReferralStats;
   publicUrl: string;
   email: string;
   passwordSet: boolean;
@@ -150,6 +156,7 @@ export function AccountEditor({
   initial,
   meta,
   stats,
+  referral,
   publicUrl,
   email,
   passwordSet,
@@ -165,6 +172,7 @@ export function AccountEditor({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [logoAccent, setLogoAccent] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
   const [saving, startSaving] = useTransition();
 
   const form = useForm<OwnerProfileValues>({
@@ -249,6 +257,30 @@ export function AccountEditor({
       }
     }
     await copy();
+  };
+
+  const copyReferralCode = async () => {
+    try {
+      await navigator.clipboard.writeText(referral.code);
+      setCodeCopied(true);
+      window.setTimeout(() => setCodeCopied(false), 1800);
+      toast({ title: t('referralCopied'), variant: 'success' });
+    } catch {
+      toast({ title: t('copyFailed'), variant: 'error' });
+    }
+  };
+
+  const shareReferral = async () => {
+    const text = t('referralShareText', { code: referral.code });
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ text, title: t('referral') });
+        return;
+      } catch {
+        return;
+      }
+    }
+    await copyReferralCode();
   };
 
   const name =
@@ -403,6 +435,89 @@ export function AccountEditor({
             </div>
           </div>
         </section>
+
+        {referral.code ? (
+          <section
+            aria-label={t('referral')}
+            className="border-border bg-surface mt-4 rounded-lg border p-4"
+          >
+            <div className="flex items-start gap-3">
+              <span
+                className="border-accent/35 text-accent bg-accent/10 mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-md border"
+                aria-hidden
+              >
+                <Gift className="size-5" strokeWidth={1.75} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-text-muted text-[12px] font-medium tracking-[0.12em] uppercase">
+                  {t('referral')}
+                </p>
+                <p className="mt-1.5 text-[15px] leading-snug font-semibold">{t('referralTitle')}</p>
+                <p className="text-text-secondary mt-1 text-[13px] leading-relaxed">
+                  {t('referralBody')}
+                </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <p
+                    dir="ltr"
+                    className="border-border bg-bg flex min-w-0 flex-1 items-center rounded-md border px-3 py-3 font-mono text-[18px] tracking-[0.22em]"
+                  >
+                    {referral.code}
+                  </p>
+                  <IconButton
+                    label={codeCopied ? t('copied') : t('referralCopy')}
+                    onClick={() => void copyReferralCode()}
+                    className="border-border bg-bg border"
+                  >
+                    {codeCopied ? (
+                      <Check className="text-success size-5" strokeWidth={2} />
+                    ) : (
+                      <Copy className="size-5" strokeWidth={1.75} />
+                    )}
+                  </IconButton>
+                  <IconButton
+                    label={t('referralShare')}
+                    onClick={() => void shareReferral()}
+                    className="border-border bg-bg border"
+                  >
+                    <Share2 className="size-5" strokeWidth={1.75} />
+                  </IconButton>
+                </div>
+                <p className="text-text-secondary mt-3 text-[13px]">
+                  {t('referralProgress', {
+                    count: referral.count,
+                    needed: referral.needed,
+                  })}
+                </p>
+                <div
+                  className="mt-2 flex gap-1.5"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={2}
+                  aria-valuenow={referral.progress}
+                  aria-label={t('referralProgress', {
+                    count: referral.count,
+                    needed: referral.needed,
+                  })}
+                >
+                  {[0, 1].map((slot) => (
+                    <div
+                      key={slot}
+                      className={cn(
+                        'h-1.5 flex-1 rounded-full',
+                        referral.progress > slot ? 'bg-accent' : 'bg-border',
+                      )}
+                    />
+                  ))}
+                </div>
+                {referral.bonusYears > 0 ? (
+                  <p className="text-accent mt-2 text-[13px] font-medium">
+                    {t('referralBonus', { count: referral.bonusYears })}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {!meta.editable ? (
           <section
