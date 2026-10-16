@@ -109,6 +109,10 @@ function toPreview(profile: PublicProfile): ProfilePreviewData & {
       labelAr: l.label_ar ?? undefined,
       value: l.value,
     })),
+    gallery: profile.gallery.map((item) => ({
+      url: item.url,
+      caption: item.caption ?? undefined,
+    })),
   };
 }
 

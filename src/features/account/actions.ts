@@ -166,6 +166,9 @@ export async function saveOwnProfile(
   if (values.backgroundUrl && !isOwnStorageUrl(values.backgroundUrl)) {
     return { ok: false, error: 'invalid' };
   }
+  if (values.gallery.some((item) => !isOwnStorageUrl(item.url))) {
+    return { ok: false, error: 'invalid' };
+  }
   if (!rateLimit(`owner-save:${session.userId}`, { limit: 30, windowMs: 60_000 }).ok) {
     return { ok: false, error: 'rate_limited' };
   }
@@ -192,6 +195,15 @@ export async function saveOwnProfile(
   });
 
   if (error || !slug) return { ok: false, error: mapRpcError(error?.message ?? '') };
+
+  const { error: galleryError } = await supabase.rpc('owner_replace_gallery', {
+    p_profile_id: values.profileId,
+    p_items: values.gallery.map((item) => ({
+      url: item.url,
+      caption: item.caption?.trim() || null,
+    })) as Json,
+  });
+  if (galleryError) return { ok: false, error: mapRpcError(galleryError.message) };
 
   await revalidatePublicProfile(slug);
   revalidatePath('/fr/account');
@@ -239,4 +251,10 @@ export async function uploadOwnBackground(
   formData: FormData,
 ): Promise<AccountActionResult<{ url: string }>> {
   return uploadOwnerImage(formData, { maxBytes: 700_000, prefix: 'bg' });
+}
+
+export async function uploadOwnGalleryPhoto(
+  formData: FormData,
+): Promise<AccountActionResult<{ url: string }>> {
+  return uploadOwnerImage(formData, { maxBytes: 500_000, prefix: 'gallery' });
 }

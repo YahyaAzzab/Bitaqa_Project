@@ -199,12 +199,27 @@ export const ownerProfileObjectSchema = wizardFormObjectSchema
     profileId: z.string().uuid(),
     backgroundUrl: z.string().url().nullable().optional(),
     links: z.array(ownerLinkSchema).max(12),
+    gallery: z
+      .array(
+        z.object({
+          key: z.string().min(1).max(64),
+          url: z
+            .string()
+            .url()
+            .refine((u) => u.startsWith('https://'), { message: 'url_unsafe' }),
+          caption: z.string().trim().max(80).optional().or(z.literal('')),
+        }),
+      )
+      .max(9),
   });
 
 export const ownerProfileSchema = ownerProfileObjectSchema.superRefine(refineContactAndHours);
 
 export type OwnerProfileValues = z.infer<typeof ownerProfileObjectSchema>;
 export type OwnerLink = z.infer<typeof ownerLinkSchema>;
+export type OwnerGalleryItem = OwnerProfileValues['gallery'][number];
+
+export const GALLERY_MAX = 9;
 
 export type WizardFormValues = z.infer<typeof wizardFormObjectSchema>;
 export type WizardLink = z.infer<typeof wizardLinkSchema>;

@@ -58,15 +58,21 @@ function parseStats(raw: Json | null): OwnerScanStats {
 
 export async function loadOwnerProfile(profileId: string) {
   const supabase = await createServerSupabaseClient();
-  const [{ data: profile }, { data: links }, { data: stats }] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', profileId).maybeSingle(),
-    supabase
-      .from('profile_links')
-      .select('id, type, label_fr, label_ar, value, position')
-      .eq('profile_id', profileId)
-      .order('position', { ascending: true }),
-    supabase.rpc('profile_scan_stats', { p_profile_id: profileId }),
-  ]);
+  const [{ data: profile }, { data: links }, { data: gallery }, { data: stats }] =
+    await Promise.all([
+      supabase.from('profiles').select('*').eq('id', profileId).maybeSingle(),
+      supabase
+        .from('profile_links')
+        .select('id, type, label_fr, label_ar, value, position')
+        .eq('profile_id', profileId)
+        .order('position', { ascending: true }),
+      supabase
+        .from('profile_gallery')
+        .select('id, url, caption, position')
+        .eq('profile_id', profileId)
+        .order('position', { ascending: true }),
+      supabase.rpc('profile_scan_stats', { p_profile_id: profileId }),
+    ]);
   if (!profile) return null;
 
   const rows = links ?? [];
@@ -112,6 +118,11 @@ export async function loadOwnerProfile(profileId: string) {
         labelAr: l.label_ar ?? '',
         value: l.value,
       })),
+    gallery: (gallery ?? []).map((item) => ({
+      key: item.id,
+      url: item.url,
+      caption: item.caption ?? '',
+    })),
   };
 
   const meta: OwnerProfileMeta = {

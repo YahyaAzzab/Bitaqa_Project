@@ -225,6 +225,41 @@ export type Database = {
           },
         ];
       };
+      profile_gallery: {
+        Row: {
+          id: string;
+          profile_id: string;
+          url: string;
+          caption: string | null;
+          position: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          url: string;
+          caption?: string | null;
+          position?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          url?: string;
+          caption?: string | null;
+          position?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'profile_gallery_profile_id_fkey';
+            columns: ['profile_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       sales: {
         Row: {
           id: string;
@@ -419,6 +454,13 @@ export type Database = {
           p_links: Json;
         };
         Returns: string;
+      };
+      owner_replace_gallery: {
+        Args: {
+          p_profile_id: string;
+          p_items: Json;
+        };
+        Returns: null;
       };
       create_profile_atomic: {
         Args: {

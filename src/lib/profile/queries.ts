@@ -8,7 +8,8 @@ const PROFILE_SELECT = `
   tagline_fr, tagline_ar, address_fr, address_ar,
   default_lang, logo_url, background_url, accent_color, theme,
   phone, email, hours, expires_at,
-  profile_links ( id, type, label_fr, label_ar, value, position )
+  profile_links ( id, type, label_fr, label_ar, value, position ),
+  profile_gallery ( id, url, caption, position )
 ` as const;
 
 function mapRow(row: {
@@ -31,8 +32,10 @@ function mapRow(row: {
   hours: unknown;
   expires_at: string;
   profile_links: PublicProfile['links'] | null;
+  profile_gallery: PublicProfile['gallery'] | null;
 }): PublicProfile {
   const links = [...(row.profile_links ?? [])].sort((a, b) => a.position - b.position);
+  const gallery = [...(row.profile_gallery ?? [])].sort((a, b) => a.position - b.position);
   const expiredByDate = new Date(row.expires_at).getTime() < Date.now();
   const status = row.status === 'active' && expiredByDate ? 'expired' : row.status;
 
@@ -56,6 +59,7 @@ function mapRow(row: {
     expires_at: row.expires_at,
     hours: parseHoursJson(row.hours),
     links,
+    gallery,
   };
 }
 

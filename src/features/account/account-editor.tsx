@@ -24,6 +24,7 @@ import { useToast } from '@/components/ui/toast';
 import { AccountSettings } from '@/features/account/account-settings';
 import { saveOwnProfile } from '@/features/account/actions';
 import { DesignPanel } from '@/features/account/design-panel';
+import { GalleryPanel } from '@/features/account/gallery-panel';
 import { LinksPanel } from '@/features/account/links-panel';
 import type { OwnerProfileMeta, OwnerScanStats } from '@/features/account/load-profile';
 import { PasswordForm } from '@/features/account/password-form';
@@ -40,8 +41,8 @@ import type { ProfilePreviewData } from '@/lib/profile/types';
 import { toWhatsAppHref } from '@/lib/profile/urls';
 import { cn } from '@/lib/utils';
 
-type TabId = 'links' | 'profile' | 'design' | 'stats';
-const TABS: TabId[] = ['links', 'profile', 'design', 'stats'];
+type TabId = 'links' | 'profile' | 'design' | 'gallery' | 'stats';
+const TABS: TabId[] = ['links', 'profile', 'design', 'gallery', 'stats'];
 
 /** Temps restant avant expires_at, pour un libellé naturel (jours / mois / ans). */
 function remainingTime(expiresAt: string): {
@@ -120,11 +121,16 @@ function toPreview(values: OwnerProfileValues): ProfilePreviewData {
         value: l.value,
       })),
     ],
+    gallery: values.gallery.map((item) => ({
+      url: item.url,
+      caption: item.caption || undefined,
+    })),
   };
 }
 
 function firstErrorTab(errors: FieldErrors<OwnerProfileValues>): TabId {
   if (errors.links) return 'links';
+  if (errors.gallery) return 'gallery';
   if (Object.keys(errors).some((key) => PROFILE_FIELDS.has(key))) return 'profile';
   return 'design';
 }
@@ -169,6 +175,7 @@ export function AccountEditor({
   const { control, formState, handleSubmit, reset, setValue } = form;
   const watched = useWatch({ control }) as OwnerProfileValues;
   const links = useWatch({ control, name: 'links' });
+  const gallery = useWatch({ control, name: 'gallery' }) ?? [];
   const dirty = formState.isDirty;
   const disabled = !meta.editable;
 
@@ -464,7 +471,7 @@ export function AccountEditor({
         <nav
           role="tablist"
           aria-label={t('tabsLabel')}
-          className="bg-bg/95 border-border sticky top-0 z-20 -mx-4 mt-6 flex border-b px-4 backdrop-blur-md"
+          className="bg-bg/95 border-border sticky top-0 z-20 -mx-4 mt-6 flex gap-0.5 overflow-x-auto border-b px-2 backdrop-blur-md"
         >
           {TABS.map((id) => {
             const selected = tab === id;
@@ -478,7 +485,7 @@ export function AccountEditor({
                 aria-controls={`account-panel-${id}`}
                 onClick={() => setTab(id)}
                 className={cn(
-                  'focus-ring relative min-h-12 flex-1 text-[14px] font-medium transition-colors duration-150',
+                  'focus-ring relative min-h-12 shrink-0 px-3 text-[13px] font-medium whitespace-nowrap transition-colors duration-150 sm:flex-1 sm:px-2 sm:text-[14px]',
                   selected ? 'text-text' : 'text-text-muted hover:text-text-secondary',
                 )}
               >
@@ -486,7 +493,7 @@ export function AccountEditor({
                 {selected ? (
                   <motion.span
                     layoutId={reduced ? undefined : 'account-tab-indicator'}
-                    className="bg-accent absolute inset-x-3 bottom-0 h-0.5 rounded-full"
+                    className="bg-accent absolute inset-x-2 bottom-0 h-0.5 rounded-full sm:inset-x-3"
                     transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                   />
                 ) : null}
@@ -526,6 +533,13 @@ export function AccountEditor({
                   form={form}
                   logoAccent={logoAccent}
                   savedAccent={initial.accentColor}
+                />
+              ) : null}
+              {tab === 'gallery' ? (
+                <GalleryPanel
+                  items={gallery}
+                  disabled={disabled}
+                  onChange={(next) => setValue('gallery', next, { shouldDirty: true })}
                 />
               ) : null}
               {tab === 'stats' ? <StatsPanel stats={stats} /> : null}

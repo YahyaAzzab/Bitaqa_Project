@@ -94,11 +94,13 @@ describe('ownerProfileSchema', () => {
     addressFr: '',
     mapsUrl: '',
     logoUrl: null,
+    backgroundUrl: null,
     hoursEnabled: false,
     hours: DEFAULT_WEEKLY_HOURS,
     theme: 'noir',
     accentColor: '#c9a96e',
     links: [{ key: 'a', type: 'instagram', value: 'https://instagram.com/nour' }],
+    gallery: [],
   };
 
   it('accepte une page valide', () => {

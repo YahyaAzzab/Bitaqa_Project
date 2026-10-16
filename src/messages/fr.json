@@ -452,7 +452,9 @@
       "whatsapp": "WhatsApp",
       "custom": "Lien"
     },
-    "zoomLogo": "Agrandir le logo"
+    "zoomLogo": "Agrandir le logo",
+    "gallery": "Galerie",
+    "galleryOpen": "Voir la photo {n}"
   },
   "legal": {
     "mentions": "Mentions légales",
@@ -474,6 +476,7 @@
       "links": "Liens",
       "profile": "Infos",
       "design": "Style",
+      "gallery": "Galerie",
       "stats": "Scans"
     },
     "preview": "Aperçu",
@@ -607,6 +610,23 @@
       "address": "Adresse (facultatif)",
       "maps": "Lien Google Maps (facultatif)",
       "mapsHint": "Collez le lien « Partager » de Google Maps."
+    },
+    "gallery": {
+      "title": "Vos photos",
+      "lede": "Facultatif. Montrez vos réalisations, votre boutique ou vos produits — jusqu’à 9 photos.",
+      "count": "{count} / {max}",
+      "emptyTitle": "Aucune photo pour l’instant",
+      "emptyBody": "Ajoutez des photos de votre travail : elles apparaîtront sur votre page.",
+      "fromGallery": "Galerie",
+      "fromCamera": "Photo",
+      "full": "Maximum atteint (9 photos). Retirez-en une pour en ajouter.",
+      "added": "Photo ajoutée — enregistrez pour la publier",
+      "remove": "Retirer la photo {n}",
+      "photoAlt": "Photo {n}",
+      "errorType": "Choisissez une image (JPEG, PNG ou WebP)",
+      "errorAuth": "Reconnectez-vous pour ajouter des photos",
+      "errorUpload": "La photo n’a pas pu être envoyée. Réessayez.",
+      "errorGeneric": "La photo n’a pas pu être préparée. Réessayez."
     },
     "design": {
       "themeHint": "Le thème s’applique à toute votre page. Changez-le quand vous voulez.",

@@ -14,6 +14,7 @@ import { resolveProfileTheme } from '@/lib/profile/theme';
 import { toTelHref, toWhatsAppHref, isSafeProfileUrl } from '@/lib/profile/urls';
 import { accentStyle } from '@/lib/color';
 import { cn } from '@/lib/utils';
+import { ProfileGallery } from './profile-gallery';
 import { ProfileHours } from './profile-hours';
 import { ProfileLinkRow } from './profile-link-row';
 import { ProfileLogo } from './profile-logo';
@@ -270,6 +271,10 @@ export function ProfileView({ data, profileUrl, locale, preview = false }: Props
                 ))}
               </m.ul>
             </section>
+          ) : null}
+
+          {!expired && data.gallery && data.gallery.length > 0 ? (
+            <ProfileGallery items={data.gallery} preview={preview} />
           ) : null}
 
           {!expired && data.hours ? <ProfileHours hours={data.hours} locale={locale} /> : null}

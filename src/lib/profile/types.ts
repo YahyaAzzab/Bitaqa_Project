@@ -29,6 +29,7 @@ export type PublicProfile = Pick<
 > & {
   hours: WeeklyHours | null;
   links: PublicProfileLink[];
+  gallery: Array<{ id: string; url: string; caption: string | null; position: number }>;
 };
 
 export type ProfilePreviewData = {
@@ -50,6 +51,7 @@ export type ProfilePreviewData = {
     labelAr?: string;
     value: string;
   }>;
+  gallery?: Array<{ url: string; caption?: string }>;
   hours?: WeeklyHours | null;
   expired?: boolean;
 };
