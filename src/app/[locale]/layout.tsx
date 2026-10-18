@@ -37,6 +37,9 @@ export async function generateMetadata({
   return {
     title: meta.title,
     description: meta.description,
+    verification: {
+      google: 'PNwgulquTcrLtq5HBbQriGVYZ0HF7ihrIN2ZiBgD6Fw',
+    },
   };
 }
 
