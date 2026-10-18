@@ -1,19 +1,11 @@
 import type { MetadataRoute } from 'next';
-import { locales } from '@/i18n/config';
+import { listIndexableProfiles } from '@/lib/seo/indexable-profiles';
+import { buildSitemap } from '@/lib/seo/sitemap-entries';
 import { publicSiteUrl } from '@/lib/site-url';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const site = publicSiteUrl();
-  const now = new Date();
+export const revalidate = 3600;
 
-  const staticPaths = ['', '/legal', '/legal/privacy'];
-
-  return locales.flatMap((locale) =>
-    staticPaths.map((path) => ({
-      url: `${site}/${locale}${path}`,
-      lastModified: now,
-      changeFrequency: path === '' ? 'weekly' : 'monthly',
-      priority: path === '' ? 1 : 0.4,
-    })),
-  );
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const profiles = await listIndexableProfiles();
+  return buildSitemap(publicSiteUrl(), profiles);
 }

@@ -1,8 +1,11 @@
 import type { CSSProperties } from 'react';
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ArrowUpRight, Phone, Radio, UserRound } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { TEAM_PHONES } from '@/lib/contact';
+import { organizationJsonLd } from '@/lib/seo/organization-json-ld';
+import { publicSiteUrl } from '@/lib/site-url';
 
 const PHONES = TEAM_PHONES;
 
@@ -14,14 +17,49 @@ const INTRO_WORD = 'BITAQA';
  */
 const INTRO_SCRIPT = `try{var d=document.documentElement;if(sessionStorage.getItem('bitaqa:intro')){d.dataset.intro='seen'}else{sessionStorage.setItem('bitaqa:intro','1');setTimeout(function(){d.dataset.intro='seen'},1400)}}catch(e){}`;
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const meta = await getTranslations({ locale, namespace: 'metadata' });
+  const site = publicSiteUrl();
+  const url = `${site}/${locale}`;
+
+  return {
+    alternates: {
+      canonical: url,
+      languages: {
+        fr: `${site}/fr`,
+        ar: `${site}/ar`,
+      },
+    },
+    openGraph: {
+      title: meta('title'),
+      description: meta('description'),
+      url,
+      siteName: 'Bitaqa',
+      locale: locale === 'ar' ? 'ar_MA' : 'fr_MA',
+      type: 'website',
+    },
+  };
+}
+
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'home' });
   const tc = await getTranslations({ locale, namespace: 'common' });
+  const meta = await getTranslations({ locale, namespace: 'metadata' });
+  const jsonLd = organizationJsonLd({
+    siteUrl: publicSiteUrl(),
+    description: meta('description'),
+  });
 
   return (
     <main className="home-shell relative min-h-dvh overflow-hidden">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
       <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }} />
       <div className="home-intro" aria-hidden>
         <div className="home-intro-inner">

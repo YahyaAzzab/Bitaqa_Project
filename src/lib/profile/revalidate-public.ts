@@ -30,6 +30,7 @@ export function isValidRevalidateSignature(
 
 export function revalidatePublicProfileLocally(slug: string): void {
   revalidateTag(`profile:${slug}`);
+  revalidateTag('sitemap-profiles');
   revalidatePath(`/fr/${slug}`);
   revalidatePath(`/ar/${slug}`);
 }
