@@ -20,6 +20,7 @@ Renseignez les clés Supabase dans `.env.local`, puis appliquez **dans l’ordre
 7. `supabase/migrations/20261016120000_profile_background.sql`
 8. `supabase/migrations/20261016130000_profile_gallery.sql`
 9. `supabase/migrations/20261016140000_referrals_admin_extend.sql`
+10. `supabase/migrations/20261024120000_gallery_max_21.sql`
 
 (SQL Editor Supabase ou CLI).
 

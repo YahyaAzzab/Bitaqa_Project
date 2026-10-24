@@ -463,7 +463,8 @@
     },
     "zoomLogo": "Agrandir le logo",
     "gallery": "Galerie",
-    "galleryOpen": "Voir la photo {n}"
+    "galleryOpen": "Voir la photo {n}",
+    "galleryMore": "Voir plus"
   },
   "legal": {
     "mentions": "Mentions légales",
@@ -631,13 +632,13 @@
     },
     "gallery": {
       "title": "Vos photos",
-      "lede": "Facultatif. Montrez vos réalisations, votre boutique ou vos produits — jusqu’à 9 photos.",
+      "lede": "Facultatif. Montrez vos réalisations, votre boutique ou vos produits — jusqu’à {max} photos.",
       "count": "{count} / {max}",
       "emptyTitle": "Aucune photo pour l’instant",
       "emptyBody": "Ajoutez des photos de votre travail : elles apparaîtront sur votre page.",
       "fromGallery": "Galerie",
       "fromCamera": "Photo",
-      "full": "Maximum atteint (9 photos). Retirez-en une pour en ajouter.",
+      "full": "Maximum atteint ({max} photos). Retirez-en une pour en ajouter.",
       "added": "Photo ajoutée — enregistrez pour la publier",
       "remove": "Retirer la photo {n}",
       "photoAlt": "Photo {n}",

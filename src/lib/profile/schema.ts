@@ -14,6 +14,8 @@ export const SUSPENSION_REASON_MAX = 280;
 
 export const ACCENT_DEFAULT = '#c9a96e';
 
+export const GALLERY_MAX = 21;
+
 const linkTypeSchema = z.enum([
   'phone',
   'whatsapp',
@@ -219,7 +221,7 @@ export const ownerProfileObjectSchema = wizardFormObjectSchema
           caption: z.string().trim().max(80).optional().or(z.literal('')),
         }),
       )
-      .max(9),
+      .max(GALLERY_MAX),
   });
 
 export const ownerProfileSchema = ownerProfileObjectSchema.superRefine(refineContactAndHours);
@@ -227,8 +229,6 @@ export const ownerProfileSchema = ownerProfileObjectSchema.superRefine(refineCon
 export type OwnerProfileValues = z.infer<typeof ownerProfileObjectSchema>;
 export type OwnerLink = z.infer<typeof ownerLinkSchema>;
 export type OwnerGalleryItem = OwnerProfileValues['gallery'][number];
-
-export const GALLERY_MAX = 9;
 
 export type WizardFormValues = z.infer<typeof wizardFormObjectSchema>;
 export type WizardLink = z.infer<typeof wizardLinkSchema>;

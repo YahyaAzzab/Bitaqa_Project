@@ -3,6 +3,7 @@ import { buildLinksPayload } from '@/lib/profile/links-payload';
 import {
   areDaySlotsValid,
   DEFAULT_WEEKLY_HOURS,
+  GALLERY_MAX,
   ownerProfileSchema,
   wizardDefaults,
   wizardFormSchema,
@@ -105,6 +106,26 @@ describe('ownerProfileSchema', () => {
 
   it('accepte une page valide', () => {
     expect(ownerProfileSchema.safeParse(owner).success).toBe(true);
+  });
+
+  it('accepte 21 photos et refuse la 22e', () => {
+    const photo = (n: number) => ({
+      key: `p${n}`,
+      url: `https://example.supabase.co/photo-${n}.webp`,
+      caption: '',
+    });
+    expect(
+      ownerProfileSchema.safeParse({
+        ...owner,
+        gallery: Array.from({ length: GALLERY_MAX }, (_, n) => photo(n)),
+      }).success,
+    ).toBe(true);
+    expect(
+      ownerProfileSchema.safeParse({
+        ...owner,
+        gallery: Array.from({ length: GALLERY_MAX + 1 }, (_, n) => photo(n)),
+      }).success,
+    ).toBe(false);
   });
 
   it('refuse les liens javascript: ou data:', () => {

@@ -9,6 +9,8 @@ import { useTranslations } from 'next-intl';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { springSheet, transitionBase } from '@/lib/motion';
 
+const GALLERY_PAGE = 6;
+
 type Item = { url: string; caption?: string };
 
 type Props = {
@@ -20,7 +22,15 @@ export function ProfileGallery({ items, preview = false }: Props) {
   const t = useTranslations('profile');
   const reduced = useReducedMotion();
   const [index, setIndex] = useState<number | null>(null);
+  const [shown, setShown] = useState(GALLERY_PAGE);
   const [portalReady, setPortalReady] = useState(false);
+  const listKey = items.map((item) => item.url).join('|');
+  const [seenList, setSeenList] = useState(listKey);
+  if (seenList !== listKey) {
+    setSeenList(listKey);
+    setShown(GALLERY_PAGE);
+    setIndex(null);
+  }
   const closeRef = useRef<HTMLButtonElement>(null);
   const open = index !== null;
   const current = index !== null ? items[index] : null;
@@ -49,6 +59,9 @@ export function ProfileGallery({ items, preview = false }: Props) {
 
   if (items.length === 0) return null;
 
+  const visible = items.slice(0, shown);
+  const remaining = items.length - visible.length;
+
   return (
     <section className="mt-8" aria-labelledby="gallery-heading">
       <h2
@@ -58,7 +71,7 @@ export function ProfileGallery({ items, preview = false }: Props) {
         {t('gallery')}
       </h2>
       <ul className="mt-3 grid grid-cols-3 gap-1.5 overflow-hidden rounded-lg">
-        {items.map((item, i) => (
+        {visible.map((item, i) => (
           <li key={`${item.url}-${i}`} className="relative aspect-square">
             <button
               type="button"
@@ -82,6 +95,15 @@ export function ProfileGallery({ items, preview = false }: Props) {
           </li>
         ))}
       </ul>
+      {remaining > 0 ? (
+        <button
+          type="button"
+          onClick={() => setShown((count) => count + GALLERY_PAGE)}
+          className="pressable focus-ring border-border text-text hover:border-accent/40 mt-3 flex min-h-12 w-full items-center justify-center rounded-md border text-[14px] font-medium"
+        >
+          {t('galleryMore')}
+        </button>
+      ) : null}
 
       {portalReady && current
         ? createPortal(

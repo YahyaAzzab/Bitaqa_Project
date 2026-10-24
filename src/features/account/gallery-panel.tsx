@@ -65,7 +65,9 @@ export function GalleryPanel({ items, disabled = false, onChange }: Props) {
         <h3 className="text-text-muted text-[12px] font-medium tracking-[0.14em] uppercase">
           {t('title')}
         </h3>
-        <p className="text-text-muted mt-1 text-[13px] leading-relaxed">{t('lede')}</p>
+        <p className="text-text-muted mt-1 text-[13px] leading-relaxed">
+          {t('lede', { max: GALLERY_MAX })}
+        </p>
         <p className="text-text-muted mt-1 text-[12px]">
           {t('count', { count: items.length, max: GALLERY_MAX })}
         </p>
@@ -168,7 +170,9 @@ export function GalleryPanel({ items, disabled = false, onChange }: Props) {
         </button>
       </div>
 
-      {full ? <p className="text-text-muted text-center text-[12px]">{t('full')}</p> : null}
+      {full ? (
+        <p className="text-text-muted text-center text-[12px]">{t('full', { max: GALLERY_MAX })}</p>
+      ) : null}
     </div>
   );
 }
